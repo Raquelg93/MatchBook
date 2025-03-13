@@ -38,6 +38,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(data.message || 'Error getting recommendations');
             }
             
+            // Check if recommendations exist and is an array
+            if (!data.recommendations || !Array.isArray(data.recommendations)) {
+                console.error('Invalid response format:', data);
+                throw new Error('Invalid response from recommendation service');
+            }
+            
             // Display recommendations
             displayRecommendations(data.recommendations);
             
@@ -51,6 +57,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     function displayRecommendations(recommendations) {
+        if (!recommendations || !Array.isArray(recommendations) || recommendations.length === 0) {
+            alert('No recommendations found. Please try different preferences.');
+            return;
+        }
+        
         const bookListElement = document.getElementById('book-list');
         bookListElement.innerHTML = '';
         
