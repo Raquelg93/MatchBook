@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
             modalHeader.className = 'modal-header';
             modalHeader.innerHTML = `
                 <h2 class="modal-title">Your Mystical Library</h2>
-                <p class="modal-author">The books the stars have guided you to save</p>
+                <p class="modal-author">Books saved from the Oracle's revelations</p>
             `;
             
             // Create book container
@@ -171,8 +171,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Empty library message
                 booksContainer.innerHTML = `
                     <div class="empty-library">
-                        <p>Your mystical collection awaits its first tome.</p>
-                        <p>Click the ✦ Add to Library ✦ button on book cards to begin your collection.</p>
+                        <p>Your mystical library awaits its first tome...</p>
+                        <p>Click "Save to Library" on any book revelation to begin your collection.</p>
                     </div>
                 `;
             } else {
@@ -233,10 +233,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
             
+            // Add close button
+            const closeButton = document.createElement('button');
+            closeButton.className = 'modal-close';
+            closeButton.textContent = 'Close Library';
+            closeButton.addEventListener('click', () => this.closeLibrary());
+            
             // Add clear library button if there are books
-            let clearLibraryBtn = null;
             if (this.books.length > 0) {
-                clearLibraryBtn = document.createElement('button');
+                const clearLibraryBtn = document.createElement('button');
                 clearLibraryBtn.className = 'clear-library-btn';
                 clearLibraryBtn.textContent = 'Clear Entire Library';
                 
@@ -246,21 +251,18 @@ document.addEventListener('DOMContentLoaded', function() {
                         this.showLibrary(); // Refresh the display
                     }
                 });
-            }
-            
-            // Close button
-            const closeButton = document.createElement('button');
-            closeButton.className = 'modal-close';
-            closeButton.textContent = 'Close Library';
-            closeButton.addEventListener('click', () => this.closeLibrary());
-            
-            // Assemble modal
-            modalContent.appendChild(modalHeader);
-            modalContent.appendChild(booksContainer);
-            if (clearLibraryBtn) {
+                
+                // Assemble modal with clear button
+                modalContent.appendChild(modalHeader);
+                modalContent.appendChild(booksContainer);
                 modalContent.appendChild(clearLibraryBtn);
+                modalContent.appendChild(closeButton);
+            } else {
+                // Assemble modal without clear button
+                modalContent.appendChild(modalHeader);
+                modalContent.appendChild(booksContainer);
+                modalContent.appendChild(closeButton);
             }
-            modalContent.appendChild(closeButton);
             
             // Add to overlay
             libraryModal.innerHTML = '';
