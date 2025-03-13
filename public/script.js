@@ -70,10 +70,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="book-info">
                     <h3 class="book-title">${book.title}</h3>
                     <p class="book-author">by ${book.author}</p>
+                    <p class="read-more">Click to reveal the oracle's wisdom</p>
                     <p class="book-description">${book.description}</p>
                     <div class="tarot-symbol">${tarotSymbols[index % tarotSymbols.length]}</div>
                 </div>
             `;
+            
+            // Add click event to expand/collapse the card
+            bookCard.addEventListener('click', function() {
+                // Close any other expanded cards
+                document.querySelectorAll('.book-card.expanded').forEach(card => {
+                    if (card !== this) {
+                        card.classList.remove('expanded');
+                    }
+                });
+                
+                // Toggle expanded state for this card
+                this.classList.toggle('expanded');
+            });
             
             bookListElement.appendChild(bookCard);
         });
