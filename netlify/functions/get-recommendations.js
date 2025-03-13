@@ -21,12 +21,12 @@ exports.handler = async function(event, context) {
     const requestBody = JSON.parse(event.body);
     const { favoriteBooks, genres, mood, length, additionalInfo } = requestBody;
     
-    // Get number of recommendations (default to 10 if not specified)
-    const numRecommendations = requestBody.numRecommendations || 10;
+    // Get number of recommendations (default to 5 if not specified to reduce token usage)
+    const numRecommendations = requestBody.numRecommendations || 5;
     
     console.log(`Generating ${numRecommendations} recommendations for books similar to: ${favoriteBooks}`);
     
-    // Create prompt for OpenAI
+    // Create prompt for OpenAI - simplified to ensure proper JSON format
     const prompt = `
       Based on the following preferences, recommend ${numRecommendations} books:
       
@@ -36,29 +36,30 @@ exports.handler = async function(event, context) {
       ${length ? `Length preference: ${length}` : ''}
       ${additionalInfo ? `Additional information: ${additionalInfo}` : ''}
       
-      Provide a detailed response in JSON format with the following structure:
+      Return ONLY a JSON object with a structure exactly like this example:
       {
         "recommendations": [
           {
-            "title": "Book Title",
-            "author": "Author Name",
-            "description": "A brief description of the book and why it was recommended based on the preferences (about 2-3 sentences)"
+            "title": "The Great Gatsby",
+            "author": "F. Scott Fitzgerald",
+            "description": "A classic novel about wealth and the American Dream in the 1920s."
           },
-          ...
+          {
+            "title": "To Kill a Mockingbird",
+            "author": "Harper Lee", 
+            "description": "A powerful story about racial inequality in the American South."
+          }
         ]
       }
-      
-      Important: Please provide exactly ${numRecommendations} books with detailed, personalized descriptions.
-      Ensure your response is valid JSON with a recommendations array.
     `;
     
-    // Call OpenAI API
+    // Call OpenAI API with more explicit instructions
     const response = await axios.post('https://api.openai.com/v1/chat/completions', {
       model: 'gpt-3.5-turbo',
       messages: [
         {
           role: 'system',
-          content: 'You are a helpful assistant that specializes in book recommendations. Your responses should be in valid JSON format with a recommendations array.'
+          content: 'You are a helpful assistant that specializes in book recommendations. You MUST respond with ONLY valid JSON that has a "recommendations" array containing book objects with "title", "author", and "description" fields. Do not include any explanatory text - the response should be valid JSON only.'
         },
         {
           role: 'user',
@@ -66,7 +67,7 @@ exports.handler = async function(event, context) {
         }
       ],
       temperature: 0.7,
-      max_tokens: 2000 // Increased token limit to accommodate more recommendations
+      max_tokens: 1500 // Reduced to avoid parsing issues
     }, {
       headers: {
         'Content-Type': 'application/json',
@@ -76,55 +77,69 @@ exports.handler = async function(event, context) {
     
     // Extract the response content
     const content = response.data.choices[0].message.content;
-    console.log("Raw response from OpenAI:", content.substring(0, 200) + "...");
+    console.log("Raw response from OpenAI:", content);
     
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    
-    if (!jsonMatch) {
-      console.error("Could not parse JSON response from OpenAI");
-      return {
-        statusCode: 500,
-        body: JSON.stringify({ error: 'Could not parse JSON response from OpenAI' })
-      };
-    }
-    
+    // More robust parsing approach
     let recommendationsData;
     try {
-      recommendationsData = JSON.parse(jsonMatch[0]);
+      // First try direct parsing - OpenAI should return pure JSON
+      recommendationsData = JSON.parse(content);
+      console.log("Successfully parsed direct JSON response");
+    } catch (directParseError) {
+      console.log("Direct JSON parse failed, trying to extract JSON from text");
       
-      // Validate the response structure
-      if (!recommendationsData.recommendations || !Array.isArray(recommendationsData.recommendations)) {
-        console.error("Invalid response structure:", recommendationsData);
+      // Try to extract JSON from text if direct parsing fails
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        console.error("Could not extract JSON from response");
         return {
           statusCode: 500,
           body: JSON.stringify({ 
-            error: 'Invalid response structure from OpenAI. Missing recommendations array.' 
+            error: 'Could not parse JSON response from OpenAI',
+            rawResponse: content.substring(0, 200) + "..." // Include part of the raw response for debugging
           })
         };
       }
       
-      if (recommendationsData.recommendations.length === 0) {
-        console.error("Empty recommendations array");
+      try {
+        recommendationsData = JSON.parse(jsonMatch[0]);
+        console.log("Successfully extracted and parsed JSON from text response");
+      } catch (extractParseError) {
+        console.error("Failed to parse extracted JSON:", extractParseError);
         return {
           statusCode: 500,
           body: JSON.stringify({ 
-            error: 'No recommendations were generated. Please try different preferences.' 
+            error: 'Failed to parse extracted JSON',
+            details: extractParseError.message,
+            extractedContent: jsonMatch[0].substring(0, 200) + "..."
           })
         };
       }
-      
-      console.log(`Successfully parsed ${recommendationsData.recommendations.length} recommendations`);
-      
-    } catch (parseError) {
-      console.error("Error parsing JSON:", parseError);
+    }
+    
+    // Validate the response structure
+    if (!recommendationsData.recommendations || !Array.isArray(recommendationsData.recommendations)) {
+      console.error("Invalid response structure:", JSON.stringify(recommendationsData));
       return {
         statusCode: 500,
         body: JSON.stringify({ 
-          error: 'Error parsing OpenAI response as JSON',
-          details: parseError.message
+          error: 'Invalid response structure from OpenAI. Missing recommendations array.',
+          receivedData: recommendationsData
         })
       };
     }
+    
+    if (recommendationsData.recommendations.length === 0) {
+      console.error("Empty recommendations array");
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ 
+          error: 'No recommendations were generated. Please try different preferences.' 
+        })
+      };
+    }
+    
+    console.log(`Successfully parsed ${recommendationsData.recommendations.length} recommendations`);
     
     // Add book cover images using Google Books API
     const recommendations = recommendationsData.recommendations;
@@ -149,13 +164,13 @@ exports.handler = async function(event, context) {
           console.log(`Found cover image for ${book.title}`);
         } else {
           // Fallback to a placeholder if no image is available
-          book.imageUrl = `https://via.placeholder.com/128x192/5b21b6/ffffff?text=${encodeURIComponent(book.title)}`;
+          book.imageUrl = `https://via.placeholder.com/128x192/5b21b6/ffffff?text=${encodeURIComponent(book.title.substring(0, 20))}`;
           console.log(`Using placeholder for ${book.title}`);
         }
       } catch (error) {
         console.log(`Error fetching book cover for ${book.title}:`, error.message);
         // Fallback to a placeholder on error
-        book.imageUrl = `https://via.placeholder.com/128x192/5b21b6/ffffff?text=${encodeURIComponent(book.title)}`;
+        book.imageUrl = `https://via.placeholder.com/128x192/5b21b6/ffffff?text=${encodeURIComponent(book.title.substring(0, 20))}`;
       }
     }
     
