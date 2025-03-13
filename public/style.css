@@ -735,9 +735,8 @@ footer .container {
         display: none;
     }
 }
-/* Modal styles - add to your style.css file */
 
-/* Modal overlay */
+/* Modal styles */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -759,17 +758,15 @@ footer .container {
     visibility: visible;
 }
 
-/* Updated modal styles for better readability */
-
-/* Modal container updates */
+/* Modal container */
 .book-modal {
-    background: var(--mystical-card-gradient);
+    background-color: var(--card-bg);
     width: 90%;
-    max-width: 650px; /* Increased width */
+    max-width: 650px;
     border-radius: 12px;
     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
     position: relative;
-    padding: 2.5rem; /* Increased padding */
+    padding: 2.5rem;
     max-height: 85vh;
     overflow-y: auto;
     transform: scale(0.9);
@@ -778,38 +775,15 @@ footer .container {
     border: 2px solid var(--mystical-gold);
     background-image: url('https://www.transparenttextures.com/patterns/paper.png');
     background-blend-mode: overlay;
+    background-attachment: fixed;
 }
 
-/* Improved description text styling */
-.modal-description {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.2rem; /* Larger font size */
-    line-height: 1.8; /* Increased line height */
-    color: var(--text); /* Color will adjust based on theme */
-    margin-bottom: 2.5rem;
-    text-align: left; /* Left-aligned for easier reading */
-    clear: both; /* Clear the float after the image */
-    padding-top: 1rem; /* Add space after the image */
-    font-weight: 500; /* Slightly bolder font */
-    letter-spacing: 0.01rem; /* Slightly increased letter spacing */
+.modal-overlay.active .book-modal {
+    transform: scale(1);
+    opacity: 1;
 }
 
-/* Improve dark mode text contrast if needed */
-[data-theme="dark"] .modal-description {
-    color: #f0edf7; /* Lighter text in dark mode for better contrast */
-}
-
-/* Change the layout of the image and text */
-.modal-image {
-    float: left;
-    width: 170px; /* Larger image */
-    margin: 0 2rem 1rem 0;
-    border-radius: 5px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    border: 1px solid var(--border);
-}
-
-/* Add more space after header */
+/* Modal content styling */
 .modal-header {
     text-align: center;
     margin-bottom: 2rem;
@@ -817,7 +791,16 @@ footer .container {
     padding-bottom: 1.2rem;
 }
 
-/* Improve title styling */
+.modal-header:after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 25%;
+    right: 25%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--mystical-gold), transparent);
+}
+
 .modal-title {
     font-family: 'Cinzel', serif;
     font-size: 2rem;
@@ -826,7 +809,40 @@ footer .container {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* Adjust spacing for modal elements */
+.modal-author {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.2rem;
+    color: var(--text-light);
+}
+
+.modal-image {
+    float: left;
+    width: 170px;
+    margin: 0 2rem 1rem 0;
+    border-radius: 5px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border);
+}
+
+.modal-description {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    line-height: 1.8;
+    color: var(--text);
+    margin-bottom: 2.5rem;
+    text-align: left;
+    clear: both;
+    padding-top: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.01rem;
+}
+
+[data-theme="dark"] .modal-description {
+    color: #f0edf7;
+}
+
+/* Modal decorative elements */
 .modal-symbol {
     position: absolute;
     top: 1.2rem;
@@ -853,7 +869,7 @@ footer .container {
     border: 1px solid var(--mystical-gold);
 }
 
-/* Add a more obvious scroll indicator if the content is long */
+/* Custom scrollbar */
 .book-modal::-webkit-scrollbar {
     width: 8px;
     background-color: rgba(0, 0, 0, 0.05);
@@ -864,7 +880,7 @@ footer .container {
     border-radius: 10px;
 }
 
-/* Move the close button to bottom of content instead of fixed position */
+/* Close button */
 .modal-close {
     position: relative;
     display: block;
@@ -881,82 +897,6 @@ footer .container {
     padding: 0.7rem;
     margin: 1rem auto 0;
     width: 200px;
-    transition: all 0.3s ease;
-}
-
-/* Add a background to the modal for better text contrast */
-.book-modal {
-    background-color: var(--card-bg);  /* Use a solid background color */
-    background-image: url('https://www.transparenttextures.com/patterns/paper.png');
-    background-blend-mode: overlay;
-    background-attachment: fixed; /* Keep the texture fixed while scrolling */
-}
-
-/* For dark mode, ensure the background is dark enough */
-[data-theme="dark"] .book-modal {
-    background-color: var(--card-bg);
-}
-
-/* Responsive improvements */
-@media (max-width: 600px) {
-    .book-modal {
-        padding: 2rem 1.5rem; /* Keep some padding on mobile */
-    }
-    
-    .modal-image {
-        width: 120px;
-        margin: 0 1.2rem 1rem 0;
-    }
-    
-    .modal-description {
-        font-size: 1.1rem;
-        line-height: 1.7;
-    }
-}
-
-/* Modal decorative elements */
-.modal-symbol {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    font-size: 1.5rem;
-    color: var(--mystical-gold);
-    opacity: 0.7;
-}
-
-.modal-number {
-    position: absolute;
-    top: 1rem;
-    left: 1rem;
-    font-family: 'Cinzel', serif;
-    font-size: 1.2rem;
-    color: var(--mystical-gold);
-    background: var(--primary-dark);
-    width: 35px;
-    height: 35px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    border: 1px solid var(--mystical-gold);
-}
-
-/* Close button */
-.modal-close {
-    position: absolute;
-    bottom: 1rem;
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-family: 'Cinzel', serif;
-    font-size: 1rem;
-    color: var(--primary);
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0.5rem;
-    margin: 0 auto;
-    width: 180px;
     transition: all 0.3s ease;
 }
 
@@ -977,12 +917,17 @@ footer .container {
 /* For smaller screens */
 @media (max-width: 600px) {
     .book-modal {
-        padding: 1.5rem;
+        padding: 2rem 1.5rem;
     }
     
     .modal-image {
-        width: 100px;
-        margin: 0 1rem 0.5rem 0;
+        width: 120px;
+        margin: 0 1.2rem 1rem 0;
+    }
+    
+    .modal-description {
+        font-size: 1.1rem;
+        line-height: 1.7;
     }
     
     .modal-title {
