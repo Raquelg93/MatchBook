@@ -505,8 +505,9 @@ select:focus {
     line-height: 1.6;
     text-align: center;
     flex-grow: 1;
+    /* Remove or increase these properties: */
     display: -webkit-box;
-    -webkit-line-clamp: 6;
+    -webkit-line-clamp: 12; /* Increased from 6 to 12 lines */
     -webkit-box-orient: vertical;
     overflow: hidden;
     margin-bottom: 1rem;
