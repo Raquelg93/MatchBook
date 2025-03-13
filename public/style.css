@@ -682,24 +682,24 @@ footer .container {
 }
 
 .symbol2 {
-    top: 65%;
+    top: 25%;
     right: 5%;
     font-size: 5rem;
-    animation-delay: 3s;
+    animation-delay: -3s;
 }
 
 .symbol3 {
-    bottom: 10%;
-    left: 15%;
-    font-size: 4.5rem;
-    animation-delay: 6s;
+    bottom: 15%;
+    left: 5%;
+    font-size: 7rem;
+    animation-delay: -6s;
 }
 
 .symbol4 {
-    top: 40%;
-    right: 15%;
+    bottom: 25%;
+    right: 10%;
     font-size: 5.5rem;
-    animation-delay: 9s;
+    animation-delay: -9s;
 }
 
 @keyframes float {
@@ -707,199 +707,225 @@ footer .container {
         transform: translateY(0) rotate(0deg);
     }
     25% {
-        transform: translateY(-15px) rotate(2deg);
+        transform: translateY(-10px) rotate(2deg);
     }
     50% {
-        transform: translateY(0) rotate(0deg);
+        transform: translateY(5px) rotate(-1deg);
     }
     75% {
-        transform: translateY(15px) rotate(-2deg);
+        transform: translateY(-5px) rotate(1deg);
     }
 }
 
-/* Responsiveness */
+/* Responsive tweaks */
 @media (max-width: 768px) {
-    .hero {
-        padding: 2.5rem 1rem;
-    }
-    
     h1 {
         font-size: 2.2rem;
-    }
-    
-    .subtitle {
-        font-size: 1.1rem;
-    }
-    
-    .book-list {
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 1.5rem;
-    }
-    
-    .book-card {
-        max-width: 220px;
-    }
-    
-    .mystical-symbol {
-        opacity: 0.02;
-    }
-    
-    .symbol1, .symbol2, .symbol3, .symbol4 {
-        font-size: 3rem;
-    }
-}
-
-@media (max-width: 480px) {
-    header .container {
-        flex-direction: column;
-        gap: 1rem;
-    }
-    
-    .logo {
-        font-size: 1.5rem;
-    }
-    
-    h1 {
-        font-size: 1.8rem;
     }
     
     .book-list {
         grid-template-columns: 1fr;
     }
     
-    .book-card {
-        max-width: 250px;
+    .logo {
+        font-size: 1.5rem;
     }
     
-    .hero:after {
-        letter-spacing: 1rem;
-        padding-left: 1rem;
+    .mystical-symbol {
+        display: none;
     }
 }
 
-/* Additional animations for mystical effect */
-@keyframes glow {
-    0%, 100% {
-        box-shadow: 0 0 5px rgba(249, 199, 79, 0.3);
-    }
-    50% {
-        box-shadow: 0 0 20px rgba(249, 199, 79, 0.6);
-    }
-}
-
-/* Add small stars */
-.stars {
+/* Modal styles */
+.modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: -1;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
-.star {
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Modal container */
+.book-modal {
+    background-color: var(--card-bg);
+    width: 90%;
+    max-width: 650px;
+    border-radius: 12px;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    position: relative;
+    padding: 2.5rem;
+    max-height: 85vh;
+    overflow-y: auto;
+    transform: scale(0.9);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    border: 2px solid var(--mystical-gold);
+    background-image: url('https://www.transparenttextures.com/patterns/paper.png');
+    background-blend-mode: overlay;
+    background-attachment: fixed;
+}
+
+.modal-overlay.active .book-modal {
+    transform: scale(1);
+    opacity: 1;
+}
+
+/* Modal content styling */
+.modal-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    position: relative;
+    padding-bottom: 1.2rem;
+}
+
+.modal-header:after {
+    content: "";
     position: absolute;
-    width: 2px;
+    bottom: 0;
+    left: 25%;
+    right: 25%;
     height: 2px;
-    background-color: var(--accent);
+    background: linear-gradient(90deg, transparent, var(--mystical-gold), transparent);
+}
+
+.modal-title {
+    font-family: 'Cinzel', serif;
+    font-size: 2rem;
+    color: var(--primary);
+    margin-bottom: 0.7rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.modal-author {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.2rem;
+    color: var(--text-light);
+}
+
+.modal-image {
+    float: left;
+    width: 170px;
+    margin: 0 2rem 1rem 0;
+    border-radius: 5px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border);
+}
+
+.modal-description {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    line-height: 1.8;
+    color: var(--text);
+    margin-bottom: 2.5rem;
+    text-align: left;
+    clear: both;
+    padding-top: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.01rem;
+}
+
+[data-theme="dark"] .modal-description {
+    color: #f0edf7;
+}
+
+/* Modal decorative elements */
+.modal-symbol {
+    position: absolute;
+    top: 1.2rem;
+    right: 1.2rem;
+    font-size: 1.5rem;
+    color: var(--mystical-gold);
+    opacity: 0.7;
+}
+
+.modal-number {
+    position: absolute;
+    top: 1.2rem;
+    left: 1.2rem;
+    font-family: 'Cinzel', serif;
+    font-size: 1.2rem;
+    color: var(--mystical-gold);
+    background: var(--primary-dark);
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 50%;
-    opacity: 0.3;
-    animation: twinkle 5s infinite;
-}
-
-@keyframes twinkle {
-    0%, 100% {
-        opacity: 0.3;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 0.8;
-        transform: scale(1.5);
-    }
-}
-
-/* Additional styles for form feedback */
-.form-feedback {
-    color: var(--accent);
-    font-size: 0.9rem;
-    margin-top: 0.5rem;
-    display: none;
-}
-
-.form-group.error label {
-    color: #e55934;
-}
-
-.form-group.error input,
-.form-group.error textarea,
-.form-group.error select {
-    border-color: #e55934;
-    box-shadow: 0 0 0 2px rgba(229, 89, 52, 0.2);
-}
-
-.form-group.error .form-feedback {
-    display: block;
-    color: #e55934;
+    border: 1px solid var(--mystical-gold);
 }
 
 /* Custom scrollbar */
-::-webkit-scrollbar {
+.book-modal::-webkit-scrollbar {
     width: 8px;
+    background-color: rgba(0, 0, 0, 0.05);
 }
 
-::-webkit-scrollbar-track {
-    background: var(--background);
-}
-
-::-webkit-scrollbar-thumb {
-    background: var(--primary);
+.book-modal::-webkit-scrollbar-thumb {
+    background-color: var(--primary);
     border-radius: 10px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: var(--primary-dark);
-}
-
-/* Tooltip styles */
-.tooltip {
+/* Close button */
+.modal-close {
     position: relative;
-    display: inline-block;
-}
-
-.tooltip .tooltip-text {
-    visibility: hidden;
-    width: 200px;
-    background-color: var(--dark);
-    color: white;
+    display: block;
+    bottom: auto;
+    left: auto;
+    right: auto;
     text-align: center;
-    border-radius: 6px;
-    padding: 10px;
-    position: absolute;
-    z-index: 100;
-    bottom: 125%;
-    left: 50%;
-    transform: translateX(-50%);
-    opacity: 0;
-    transition: opacity 0.3s;
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 0.9rem;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--accent);
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    color: var(--primary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.7rem;
+    margin: 1rem auto 0;
+    width: 200px;
+    transition: all 0.3s ease;
 }
 
-.tooltip .tooltip-text::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: var(--dark) transparent transparent transparent;
+.modal-close:hover {
+    color: var(--accent);
 }
 
-.tooltip:hover .tooltip-text {
-    visibility: visible;
-    opacity: 1;
+.modal-close:after {
+    content: "✦";
+    margin-left: 0.5rem;
+}
+
+.modal-close:before {
+    content: "✦";
+    margin-right: 0.5rem;
+}
+
+/* For smaller screens */
+@media (max-width: 600px) {
+    .book-modal {
+        padding: 2rem 1.5rem;
+    }
+    
+    .modal-image {
+        width: 120px;
+        margin: 0 1.2rem 1rem 0;
+    }
+    
+    .modal-title {
+        font-size: 1.5rem;
+    }
 }
