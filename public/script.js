@@ -200,36 +200,36 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('Form element not found!');
     }
     
+    // Create modal overlay immediately on page load to ensure it's available
+    if (!document.getElementById('modal-overlay')) {
+        const modalOverlay = document.createElement('div');
+        modalOverlay.id = 'modal-overlay';
+        modalOverlay.className = 'modal-overlay';
+        modalOverlay.innerHTML = '<div class="book-modal"></div>';
+        
+        // Close modal when clicking outside the modal content
+        modalOverlay.addEventListener('click', function(e) {
+            if (e.target === modalOverlay) {
+                closeModal();
+            }
+        });
+        
+        document.body.appendChild(modalOverlay);
+    }
+    
+    // Close modal on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+        }
+    });
+    
     function displayRecommendations(recommendations) {
         const bookListElement = document.getElementById('book-list');
         bookListElement.innerHTML = '';
         
         // Tarot symbols to rotate through
         const tarotSymbols = ['☽', '☼', '★', '♆', '⚶', '☿', '♀', '♃', '♄', '⚸'];
-        
-        // Create modal overlay if it doesn't exist
-        if (!document.getElementById('modal-overlay')) {
-            const modalOverlay = document.createElement('div');
-            modalOverlay.id = 'modal-overlay';
-            modalOverlay.className = 'modal-overlay';
-            modalOverlay.innerHTML = '<div class="book-modal"></div>';
-            
-            // Close modal when clicking outside the modal content
-            modalOverlay.addEventListener('click', function(e) {
-                if (e.target === modalOverlay) {
-                    closeModal();
-                }
-            });
-            
-            // Close modal on escape key
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    closeModal();
-                }
-            });
-            
-            document.body.appendChild(modalOverlay);
-        }
         
         recommendations.forEach((book, index) => {
             const bookCard = document.createElement('div');
@@ -275,7 +275,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to open the book modal
     function openBookModal(book, index, symbol, imageUrl) {
         const modalOverlay = document.getElementById('modal-overlay');
+        if (!modalOverlay) {
+            console.error('Modal overlay not found');
+            return;
+        }
+        
         const bookModal = modalOverlay.querySelector('.book-modal');
+        if (!bookModal) {
+            console.error('Book modal not found');
+            return;
+        }
         
         // Set modal content with enhanced mystical information
         bookModal.innerHTML = `
@@ -311,7 +320,10 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         
         // Add event listener to close button
-        bookModal.querySelector('.modal-close').addEventListener('click', closeModal);
+        const closeButton = bookModal.querySelector('.modal-close');
+        if (closeButton) {
+            closeButton.addEventListener('click', closeModal);
+        }
         
         // Show the modal
         modalOverlay.classList.add('active');
@@ -323,10 +335,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to close the modal
     function closeModal() {
         const modalOverlay = document.getElementById('modal-overlay');
-        modalOverlay.classList.remove('active');
-        
-        // Re-enable body scrolling
-        document.body.style.overflow = '';
+        if (modalOverlay) {
+            modalOverlay.classList.remove('active');
+            
+            // Re-enable body scrolling
+            document.body.style.overflow = '';
+        }
     }
     
     // Function to convert numbers to Roman numerals for the tarot cards
@@ -355,13 +369,16 @@ document.addEventListener('DOMContentLoaded', function() {
     document.documentElement.setAttribute('data-theme', savedTheme);
     
     // Toggle dark mode
-    document.getElementById('theme-toggle').addEventListener('click', () => {
-        const currentTheme = document.documentElement.getAttribute('data-theme');
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        
-        document.documentElement.setAttribute('data-theme', newTheme);
-        localStorage.setItem('theme', newTheme);
-    });
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+    }
     
     // Add stars to the background
     function createStars() {
