@@ -56,6 +56,30 @@ document.addEventListener('DOMContentLoaded', function() {
         // Tarot symbols to rotate through
         const tarotSymbols = ['☽', '☼', '★', '♆', '⚶', '☿', '♀', '♃', '♄', '⚸'];
         
+        // Create modal overlay if it doesn't exist
+        if (!document.getElementById('modal-overlay')) {
+            const modalOverlay = document.createElement('div');
+            modalOverlay.id = 'modal-overlay';
+            modalOverlay.className = 'modal-overlay';
+            modalOverlay.innerHTML = '<div class="book-modal"></div>';
+            
+            // Close modal when clicking outside the modal content
+            modalOverlay.addEventListener('click', function(e) {
+                if (e.target === modalOverlay) {
+                    closeModal();
+                }
+            });
+            
+            // Close modal on escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeModal();
+                }
+            });
+            
+            document.body.appendChild(modalOverlay);
+        }
+        
         recommendations.forEach((book, index) => {
             const bookCard = document.createElement('div');
             bookCard.className = 'book-card';
@@ -71,22 +95,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     <h3 class="book-title">${book.title}</h3>
                     <p class="book-author">by ${book.author}</p>
                     <p class="read-more">Click to reveal the oracle's wisdom</p>
-                    <p class="book-description">${book.description}</p>
                     <div class="tarot-symbol">${tarotSymbols[index % tarotSymbols.length]}</div>
                 </div>
             `;
             
-            // Add click event to expand/collapse the card
+            // Add click event to open modal with book details
             bookCard.addEventListener('click', function() {
-                // Close any other expanded cards
-                document.querySelectorAll('.book-card.expanded').forEach(card => {
-                    if (card !== this) {
-                        card.classList.remove('expanded');
-                    }
-                });
-                
-                // Toggle expanded state for this card
-                this.classList.toggle('expanded');
+                openBookModal(book, index, tarotSymbols[index % tarotSymbols.length], imageUrl);
             });
             
             bookListElement.appendChild(bookCard);
@@ -104,6 +119,43 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => {
             document.getElementById('result-section').classList.add('visible');
         }, 100);
+    }
+    
+    // Function to open the book modal
+    function openBookModal(book, index, symbol, imageUrl) {
+        const modalOverlay = document.getElementById('modal-overlay');
+        const bookModal = modalOverlay.querySelector('.book-modal');
+        
+        // Set modal content
+        bookModal.innerHTML = `
+            <div class="modal-number">${romanize(index + 1)}</div>
+            <div class="modal-symbol">${symbol}</div>
+            <div class="modal-header">
+                <h2 class="modal-title">${book.title}</h2>
+                <p class="modal-author">by ${book.author}</p>
+            </div>
+            <img src="${imageUrl}" alt="${book.title}" class="modal-image">
+            <p class="modal-description">${book.description}</p>
+            <button class="modal-close">Close Revelation</button>
+        `;
+        
+        // Add event listener to close button
+        bookModal.querySelector('.modal-close').addEventListener('click', closeModal);
+        
+        // Show the modal
+        modalOverlay.classList.add('active');
+        
+        // Prevent body scrolling while modal is open
+        document.body.style.overflow = 'hidden';
+    }
+    
+    // Function to close the modal
+    function closeModal() {
+        const modalOverlay = document.getElementById('modal-overlay');
+        modalOverlay.classList.remove('active');
+        
+        // Re-enable body scrolling
+        document.body.style.overflow = '';
     }
     
     // Function to convert numbers to Roman numerals for the tarot cards
