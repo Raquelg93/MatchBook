@@ -1,41 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BookMatch - AI Book Recommendations</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
     <header>
         <div class="container">
             <a href="#" class="logo">BookMatch</a>
+            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="sun-icon">
+                    <circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="moon-icon">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </button>
         </div>
     </header>
-
+    
     <main>
         <div class="container">
             <div class="hero">
                 <h1>AI-Powered Book Recommendations</h1>
                 <p class="subtitle">Tell us what you like, and our AI will suggest your next favorite book.</p>
             </div>
-
+            
             <div class="form-container">
                 <form id="recommendation-form">
                     <div class="form-group">
                         <label for="favorite-books">What are some books you've enjoyed?</label>
-                        <textarea id="favorite-books" rows="3"
-                            placeholder="E.g., The Lord of the Rings, Pride and Prejudice, Educated..."
-                            required></textarea>
+                        <textarea id="favorite-books" rows="3" placeholder="E.g., The Lord of the Rings, Pride and Prejudice, Educated..." required></textarea>
                     </div>
-
+                    
                     <div class="form-group">
                         <label for="genres">Preferred genres (optional)</label>
                         <input type="text" id="genres" placeholder="E.g., Science Fiction, Mystery, Biography...">
                     </div>
-
+                    
                     <div class="form-group">
                         <label for="mood">What kind of mood are you looking for? (optional)</label>
                         <select id="mood">
@@ -49,7 +53,7 @@
                             <option value="relaxing">Relaxing</option>
                         </select>
                     </div>
-
+                    
                     <div class="form-group">
                         <label for="length">Book length preference (optional)</label>
                         <select id="length">
@@ -59,21 +63,30 @@
                             <option value="long">Long (over 500 pages)</option>
                         </select>
                     </div>
-
+                    
                     <div class="form-group">
                         <label for="additional-info">Anything else you'd like us to know?</label>
-                        <textarea id="additional-info" rows="3"
-                            placeholder="E.g., I prefer books with strong female characters, I'm learning about history..."></textarea>
+                        <textarea id="additional-info" rows="3" placeholder="E.g., I prefer books with strong female characters, I'm learning about history..."></textarea>
                     </div>
-
+                    
+                    <div class="form-group">
+                        <label for="num-recommendations">Number of recommendations:</label>
+                        <select id="num-recommendations">
+                            <option value="5">5 books</option>
+                            <option value="10" selected>10 books</option>
+                            <option value="15">15 books</option>
+                            <option value="20">20 books</option>
+                        </select>
+                    </div>
+                    
                     <button type="submit" class="btn">Get Recommendations</button>
                 </form>
-
+                
                 <div class="loading" id="loading">
                     <div class="spinner"></div>
                     <p>Generating your personalized recommendations...</p>
                 </div>
-
+                
                 <div class="result-section" id="result-section">
                     <h2>Your Personalized Book Recommendations</h2>
                     <div class="book-list" id="book-list">
@@ -83,14 +96,13 @@
             </div>
         </div>
     </main>
-
+    
     <footer>
         <div class="container">
             <p>&copy; 2025 BookBuddy. Powered by AI.</p>
         </div>
     </footer>
-
+    
     <script src="script.js"></script>
 </body>
-
 </html>
