@@ -1,18 +1,42 @@
+/* Dark Mode Variables */
 :root {
     --primary: #6d28d9;
     --primary-dark: #5b21b6;
     --secondary: #8b5cf6;
     --light: #f3f4f6;
     --dark: #1f2937;
+    --text: #1f2937;
+    --text-light: #6b7280;
+    --background: #f3f4f6;
+    --card-bg: #ffffff;
+    --border: #d1d5db;
+    --shadow: rgba(0, 0, 0, 0.1);
+    --shadow-hover: rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] {
+    --primary: #8b5cf6;
+    --primary-dark: #7c3aed;
+    --secondary: #a78bfa;
+    --light: #1f2937;
+    --dark: #f3f4f6;
+    --text: #f3f4f6;
+    --text-light: #9ca3af;
+    --background: #111827;
+    --card-bg: #1f2937;
+    --border: #374151;
+    --shadow: rgba(0, 0, 0, 0.3);
+    --shadow-hover: rgba(0, 0, 0, 0.4);
 }
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
-    color: var(--dark);
-    background-color: var(--light);
+    color: var(--text);
+    background-color: var(--background);
     margin: 0;
     padding: 0;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .container {
@@ -48,9 +72,9 @@ main {
 .hero {
     text-align: center;
     padding: 3rem 0;
-    background-color: white;
+    background-color: var(--card-bg);
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px var(--shadow);
     margin-bottom: 2rem;
 }
 
@@ -63,7 +87,7 @@ h1 {
 .subtitle {
     font-size: 1.2rem;
     margin-bottom: 2rem;
-    color: #6b7280;
+    color: var(--text-light);
 }
 
 .form-container {
@@ -86,10 +110,12 @@ textarea,
 select {
     width: 100%;
     padding: 12px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--border);
     border-radius: 6px;
     font-size: 1rem;
     transition: border-color 0.3s;
+    background-color: var(--card-bg);
+    color: var(--text);
 }
 
 input[type="text"]:focus,
@@ -134,16 +160,16 @@ select:focus {
 }
 
 .book-card {
-    background-color: white;
+    background-color: var(--card-bg);
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px var(--shadow);
     transition: transform 0.3s, box-shadow 0.3s;
 }
 
 .book-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px var(--shadow-hover);
 }
 
 .book-card img {
@@ -163,13 +189,13 @@ select:focus {
 }
 
 .book-author {
-    color: #6b7280;
+    color: var(--text-light);
     margin-bottom: 1rem;
 }
 
 .book-description {
     font-size: 0.9rem;
-    color: #4b5563;
+    color: var(--text);
 }
 
 .loading {
@@ -189,9 +215,7 @@ select:focus {
 }
 
 @keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+    to { transform: rotate(360deg); }
 }
 
 footer {
@@ -201,11 +225,44 @@ footer {
     margin-top: 3rem;
 }
 
+.theme-toggle {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s;
+}
+
+.theme-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .moon-icon {
+    display: none;
+}
+
+[data-theme="dark"] .sun-icon {
+    display: block;
+}
+
+[data-theme="light"] .sun-icon {
+    display: none;
+}
+
+[data-theme="light"] .moon-icon {
+    display: block;
+}
+
 @media (max-width: 768px) {
     h1 {
         font-size: 2rem;
     }
-
+    
     .book-list {
         grid-template-columns: 1fr;
     }
