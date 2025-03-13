@@ -3,17 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MatchBook - AI Book Recommendations</title>
+    <title>The Book Oracle - Mystical Reading Recommendations</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="mystical-symbol symbol1">✧</div>
-<div class="mystical-symbol symbol2">✦</div>
-<div class="mystical-symbol symbol3">☽</div>
-<div class="mystical-symbol symbol4">✵</div>
+    <div class="mystical-symbol symbol2">✦</div>
+    <div class="mystical-symbol symbol3">☽</div>
+    <div class="mystical-symbol symbol4">✵</div>
+    
     <header>
         <div class="container">
-            <a href="#" class="logo">MatchBook</a>
+            <a href="#" class="logo">The Book Oracle</a>
             <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="sun-icon">
                     <circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
@@ -28,8 +30,8 @@
     <main>
         <div class="container">
             <div class="hero">
-<h1>MatchBook</h1>
-<p class="subtitle">Share your literary preferences, and the oracle shall reveal your next destined reads...</p>
+                <h1>Divine Book Revelations</h1>
+                <p class="subtitle">Share your literary preferences, and the oracle shall reveal your next destined reads...</p>
             </div>
             
             <div class="form-container">
@@ -73,7 +75,7 @@
                         <textarea id="additional-info" rows="3" placeholder="E.g., I prefer books with strong female characters, I'm learning about history..."></textarea>
                     </div>
                     
-                    <button type="submit" class="btn">Consult The Oracle</button>
+                    <button type="submit" class="btn">Consult the Oracle</button>
                 </form>
                 
                 <div class="loading" id="loading">
@@ -82,9 +84,15 @@
                 </div>
                 
                 <div class="result-section" id="result-section">
-                    <h2>Your Mystical Reading Journey Awaits</h2>
+                    <div class="tarot-reading-intro">
+                        <h2>The Oracle's Literary Revelations</h2>
+                        <p class="reading-description">The celestial alignment has revealed these mystical tomes destined for your journey. Each card represents a book written in your stars.</p>
+                    </div>
                     <div class="book-list" id="book-list">
-                        <!-- Book recommendations will be added here -->
+                        <!-- Book recommendations will be added here as tarot cards -->
+                    </div>
+                    <div class="reading-footer">
+                        <p>✧ The Oracle has spoken. Your literary destiny awaits. ✧</p>
                     </div>
                 </div>
             </div>
@@ -93,7 +101,7 @@
     
     <footer>
         <div class="container">
-            <p>&copy; ancient wisdom and modern AI</p>
+            <p>&copy; 2025 The Book Oracle. Powered by ancient wisdom and modern AI.</p>
         </div>
     </footer>
     
