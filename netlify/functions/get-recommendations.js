@@ -24,6 +24,8 @@ exports.handler = async function(event, context) {
     // Get number of recommendations (default to 10 if not specified)
     const numRecommendations = requestBody.numRecommendations || 10;
     
+    console.log(`Generating ${numRecommendations} recommendations for books similar to: ${favoriteBooks}`);
+    
     // Create prompt for OpenAI
     const prompt = `
       Based on the following preferences, recommend ${numRecommendations} books:
@@ -47,6 +49,7 @@ exports.handler = async function(event, context) {
       }
       
       Important: Please provide exactly ${numRecommendations} books with detailed, personalized descriptions.
+      Ensure your response is valid JSON with a recommendations array.
     `;
     
     // Call OpenAI API
@@ -55,7 +58,7 @@ exports.handler = async function(event, context) {
       messages: [
         {
           role: 'system',
-          content: 'You are a helpful assistant that specializes in book recommendations. Your responses should be in valid JSON format.'
+          content: 'You are a helpful assistant that specializes in book recommendations. Your responses should be in valid JSON format with a recommendations array.'
         },
         {
           role: 'user',
@@ -73,16 +76,55 @@ exports.handler = async function(event, context) {
     
     // Extract the response content
     const content = response.data.choices[0].message.content;
+    console.log("Raw response from OpenAI:", content.substring(0, 200) + "...");
+    
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     
     if (!jsonMatch) {
+      console.error("Could not parse JSON response from OpenAI");
       return {
         statusCode: 500,
         body: JSON.stringify({ error: 'Could not parse JSON response from OpenAI' })
       };
     }
     
-    const recommendationsData = JSON.parse(jsonMatch[0]);
+    let recommendationsData;
+    try {
+      recommendationsData = JSON.parse(jsonMatch[0]);
+      
+      // Validate the response structure
+      if (!recommendationsData.recommendations || !Array.isArray(recommendationsData.recommendations)) {
+        console.error("Invalid response structure:", recommendationsData);
+        return {
+          statusCode: 500,
+          body: JSON.stringify({ 
+            error: 'Invalid response structure from OpenAI. Missing recommendations array.' 
+          })
+        };
+      }
+      
+      if (recommendationsData.recommendations.length === 0) {
+        console.error("Empty recommendations array");
+        return {
+          statusCode: 500,
+          body: JSON.stringify({ 
+            error: 'No recommendations were generated. Please try different preferences.' 
+          })
+        };
+      }
+      
+      console.log(`Successfully parsed ${recommendationsData.recommendations.length} recommendations`);
+      
+    } catch (parseError) {
+      console.error("Error parsing JSON:", parseError);
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ 
+          error: 'Error parsing OpenAI response as JSON',
+          details: parseError.message
+        })
+      };
+    }
     
     // Add book cover images using Google Books API
     const recommendations = recommendationsData.recommendations;
@@ -93,6 +135,8 @@ exports.handler = async function(event, context) {
       try {
         // Search Google Books API for the book
         const bookQuery = `${book.title} ${book.author}`;
+        console.log(`Fetching cover for: ${bookQuery}`);
+        
         const googleBooksResponse = await axios.get(
           `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(bookQuery)}&maxResults=1`
         );
@@ -102,12 +146,14 @@ exports.handler = async function(event, context) {
             googleBooksResponse.data.items[0].volumeInfo.imageLinks &&
             googleBooksResponse.data.items[0].volumeInfo.imageLinks.thumbnail) {
           book.imageUrl = googleBooksResponse.data.items[0].volumeInfo.imageLinks.thumbnail;
+          console.log(`Found cover image for ${book.title}`);
         } else {
           // Fallback to a placeholder if no image is available
           book.imageUrl = `https://via.placeholder.com/128x192/5b21b6/ffffff?text=${encodeURIComponent(book.title)}`;
+          console.log(`Using placeholder for ${book.title}`);
         }
       } catch (error) {
-        console.log(`Error fetching book cover for ${book.title}:`, error);
+        console.log(`Error fetching book cover for ${book.title}:`, error.message);
         // Fallback to a placeholder on error
         book.imageUrl = `https://via.placeholder.com/128x192/5b21b6/ffffff?text=${encodeURIComponent(book.title)}`;
       }
@@ -123,7 +169,7 @@ exports.handler = async function(event, context) {
     };
     
   } catch (error) {
-    console.log('Error:', error);
+    console.log('Error in serverless function:', error.message);
     
     return {
       statusCode: 500,
