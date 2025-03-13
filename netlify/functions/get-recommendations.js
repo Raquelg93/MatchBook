@@ -19,13 +19,14 @@ exports.handler = async function(event, context) {
     
     // Parse the request body
     const requestBody = JSON.parse(event.body);
-    const { favoriteBooks, genres, mood, length, additionalInfo } = requestBody;
+    const { favoriteBooks, favoriteAuthors, genres, mood, length, additionalInfo } = requestBody;
     
     // Create prompt for OpenAI
     const prompt = `
       Based on the following preferences, recommend 5 books:
       
       Favorite books: ${favoriteBooks}
+      ${favoriteAuthors ? `Favorite authors: ${favoriteAuthors}` : ''}
       ${genres ? `Preferred genres: ${genres}` : ''}
       ${mood ? `Preferred mood: ${mood}` : ''}
       ${length ? `Length preference: ${length}` : ''}
