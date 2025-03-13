@@ -1,130 +1,292 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Library function for book recommendation processing
-    const bookLibrary = {
-        // Store cached recommendations
-        cachedRecommendations: [],
+    // Library Manager - handles saving and retrieving books
+    const libraryManager = {
+        // Store saved books
+        books: [],
         
-        // Process book recommendations based on user input
-        processRecommendations: function(userInput) {
-            // This function will be called by the fetch API response handler
-            // It performs additional processing on the raw API response
-            
-            if (!userInput || !Array.isArray(userInput)) {
-                return [];
-            }
-            
-            // Process and enhance each recommendation
-            return userInput.map(book => {
-                // Add mystical descriptions if not present
-                if (!book.description || book.description.trim() === '') {
-                    book.description = this.generateMysticalDescription(book.title, book.author);
-                }
-                
-                // Add genre tags if not present
-                if (!book.genres || !Array.isArray(book.genres) || book.genres.length === 0) {
-                    book.genres = this.inferGenres(book.title, book.description);
-                }
-                
-                // Add celestial alignment
-                book.celestialAlignment = this.getCelestialAlignment();
-                
-                // Add reading mood
-                book.readingMood = this.getReadingMood(book);
-                
-                return book;
-            });
+        // Initialize the library
+        init: function() {
+            this.loadFromStorage();
+            this.setupLibraryButton();
+            this.updateLibraryCount();
         },
         
-        // Generate a mystical description for books without one
-        generateMysticalDescription: function(title, author) {
-            const mysticalPhrases = [
-                "The cosmic energies align when one opens this tome of wisdom.",
-                "As the moon waxes and wanes, so too does the journey within these pages.",
-                "The ancient stars have guided many souls to the revelations contained herein.",
-                "Like a tarot reading that unveils hidden truths, this book reveals layers of meaning with each reading.",
-                "The universe conspired to bring this book into your path at this precise moment."
-            ];
-            
-            const randomPhrase = mysticalPhrases[Math.floor(Math.random() * mysticalPhrases.length)];
-            return `${randomPhrase} "${title}" by ${author} resonates with the seeker's journey, offering insights that transcend the ordinary. The words within speak directly to those who listen with both mind and spirit.`;
-        },
-        
-        // Infer genres based on title and description
-        inferGenres: function(title, description) {
-            const genreKeywords = {
-                'Fantasy': ['magic', 'wizard', 'dragon', 'spell', 'kingdom', 'quest', 'sword', 'mythical', 'creature'],
-                'Mystery': ['detective', 'crime', 'solve', 'murder', 'case', 'investigation', 'clue', 'suspicious'],
-                'Science Fiction': ['space', 'alien', 'future', 'technology', 'robot', 'galaxy', 'planet', 'dystopian'],
-                'Romance': ['love', 'heart', 'passion', 'relationship', 'marriage', 'affection', 'desire'],
-                'Historical': ['history', 'century', 'ancient', 'era', 'period', 'historical', 'past', 'war'],
-                'Spiritual': ['spirit', 'soul', 'journey', 'enlightenment', 'wisdom', 'meditation', 'cosmic'],
-                'Self-Help': ['growth', 'improve', 'success', 'habit', 'motivation', 'inspire', 'change']
-            };
-            
-            const contentToCheck = (title + ' ' + description).toLowerCase();
-            const matchedGenres = [];
-            
-            for (const [genre, keywords] of Object.entries(genreKeywords)) {
-                if (keywords.some(keyword => contentToCheck.includes(keyword))) {
-                    matchedGenres.push(genre);
+        // Load books from localStorage
+        loadFromStorage: function() {
+            const saved = localStorage.getItem('mysticalLibrary');
+            if (saved) {
+                try {
+                    this.books = JSON.parse(saved);
+                } catch (error) {
+                    console.error('Error loading library:', error);
+                    this.books = [];
                 }
             }
-            
-            // If no genres matched, return some default mystical genres
-            return matchedGenres.length > 0 ? matchedGenres : ['Mystical', 'Esoteric Wisdom', 'Transformative'];
         },
         
-        // Get a celestial alignment for the book
-        getCelestialAlignment: function() {
-            const celestialBodies = ['Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
-            const zodiacSigns = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
-            const aspects = ['Conjunction', 'Trine', 'Square', 'Opposition', 'Sextile'];
-            
-            const randomBody = celestialBodies[Math.floor(Math.random() * celestialBodies.length)];
-            const randomSign = zodiacSigns[Math.floor(Math.random() * zodiacSigns.length)];
-            const randomAspect = aspects[Math.floor(Math.random() * aspects.length)];
-            
-            return `${randomBody} in ${randomSign} ${randomAspect}`;
+        // Save books to localStorage
+        saveToStorage: function() {
+            localStorage.setItem('mysticalLibrary', JSON.stringify(this.books));
         },
         
-        // Get a reading mood for the book
-        getReadingMood: function(book) {
-            const moods = [
-                'Best read under moonlight for full effect',
-                'Read during dawn for heightened awareness',
-                'Perfect for contemplative evening reflection',
-                'Connects most strongly during the full moon',
-                'Meditate before reading to unlock deeper meanings',
-                'Read with a crystal nearby to amplify insights',
-                'Most powerful when read in solitude and silence',
-                'Share with kindred spirits for collective wisdom'
-            ];
+        // Add a book to the library
+        addBook: function(book) {
+            // Check if book already exists in library
+            if (!this.isInLibrary(book)) {
+                // Add save timestamp
+                const bookWithTimestamp = {
+                    ...book,
+                    savedAt: new Date().toISOString()
+                };
+                
+                this.books.push(bookWithTimestamp);
+                this.saveToStorage();
+                this.updateLibraryCount();
+                return true;
+            }
+            return false;
+        },
+        
+        // Check if a book is already in the library
+        isInLibrary: function(book) {
+            return this.books.some(savedBook => 
+                savedBook.title === book.title && 
+                savedBook.author === book.author
+            );
+        },
+        
+        // Remove a book from the library
+        removeBook: function(book) {
+            const initialCount = this.books.length;
+            this.books = this.books.filter(savedBook => 
+                !(savedBook.title === book.title && savedBook.author === book.author)
+            );
             
-            return moods[Math.floor(Math.random() * moods.length)];
+            // If a book was removed, save the changes
+            if (initialCount !== this.books.length) {
+                this.saveToStorage();
+                this.updateLibraryCount();
+                return true;
+            }
+            return false;
         },
         
-        // Save recommendations to cache
-        saveToCache: function(recommendations) {
-            this.cachedRecommendations = recommendations;
-            // You could also save to localStorage for persistence between sessions
-            localStorage.setItem('cachedBookRecommendations', JSON.stringify(recommendations));
+        // Get all saved books
+        getAllBooks: function() {
+            return [...this.books];
         },
         
-        // Get recommendations from cache
-        getFromCache: function() {
-            // Try to get from memory first
-            if (this.cachedRecommendations.length > 0) {
-                return this.cachedRecommendations;
+        // Create and set up the library button in the header
+        setupLibraryButton: function() {
+            const headerContainer = document.querySelector('header .container');
+            
+            if (headerContainer) {
+                // Create the library button if it doesn't exist
+                if (!document.getElementById('library-button')) {
+                    const libraryButton = document.createElement('div');
+                    libraryButton.id = 'library-button';
+                    libraryButton.className = 'library-button';
+                    
+                    // Create the counter element
+                    const counter = document.createElement('span');
+                    counter.id = 'library-counter';
+                    counter.className = 'library-counter';
+                    counter.textContent = this.books.length;
+                    
+                    // Hide counter if empty
+                    if (this.books.length === 0) {
+                        counter.style.display = 'none';
+                    }
+                    
+                    // Create the icon
+                    libraryButton.innerHTML = '📚';
+                    libraryButton.appendChild(counter);
+                    
+                    // Add click event to show library
+                    libraryButton.addEventListener('click', () => this.showLibrary());
+                    
+                    // Insert before theme toggle
+                    const themeToggle = document.getElementById('theme-toggle');
+                    if (themeToggle) {
+                        headerContainer.insertBefore(libraryButton, themeToggle);
+                    } else {
+                        headerContainer.appendChild(libraryButton);
+                    }
+                }
+            }
+        },
+        
+        // Update the library count displayed on the button
+        updateLibraryCount: function() {
+            const counter = document.getElementById('library-counter');
+            if (counter) {
+                counter.textContent = this.books.length;
+                
+                // Show/hide based on count
+                if (this.books.length > 0) {
+                    counter.style.display = 'flex';
+                } else {
+                    counter.style.display = 'none';
+                }
+            }
+        },
+        
+        // Show the library modal with all saved books
+        showLibrary: function() {
+            // Create or get library modal overlay
+            let libraryModal = document.getElementById('library-modal-overlay');
+            
+            if (!libraryModal) {
+                libraryModal = document.createElement('div');
+                libraryModal.id = 'library-modal-overlay';
+                libraryModal.className = 'modal-overlay';
+                
+                // Close when clicking outside
+                libraryModal.addEventListener('click', (e) => {
+                    if (e.target === libraryModal) {
+                        this.closeLibrary();
+                    }
+                });
+                
+                document.body.appendChild(libraryModal);
             }
             
-            // Try to get from localStorage
-            const cached = localStorage.getItem('cachedBookRecommendations');
-            if (cached) {
-                this.cachedRecommendations = JSON.parse(cached);
-                return this.cachedRecommendations;
+            // Create library modal content
+            const modalContent = document.createElement('div');
+            modalContent.className = 'book-modal library-modal';
+            
+            // Create header
+            const modalHeader = document.createElement('div');
+            modalHeader.className = 'modal-header';
+            modalHeader.innerHTML = `
+                <h2 class="modal-title">Your Mystical Library</h2>
+                <p class="modal-author">The books the stars have guided you to save</p>
+            `;
+            
+            // Create book container
+            const booksContainer = document.createElement('div');
+            booksContainer.className = 'library-books';
+            
+            if (this.books.length === 0) {
+                // Empty library message
+                booksContainer.innerHTML = `
+                    <div class="empty-library">
+                        <p>Your mystical collection awaits its first tome.</p>
+                        <p>Click the ✦ Add to Library ✦ button on book cards to begin your collection.</p>
+                    </div>
+                `;
+            } else {
+                // Sort books by saved date (newest first)
+                const sortedBooks = [...this.books].sort((a, b) => 
+                    new Date(b.savedAt) - new Date(a.savedAt)
+                );
+                
+                // Add each book
+                sortedBooks.forEach((book, index) => {
+                    const bookItem = document.createElement('div');
+                    bookItem.className = 'library-book-item';
+                    
+                    // Format saved date
+                    const savedDate = new Date(book.savedAt);
+                    const formattedDate = savedDate.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                    
+                    // Use book image or placeholder
+                    const imageUrl = book.imageUrl || `/api/placeholder/300/450`;
+                    
+                    bookItem.innerHTML = `
+                        <div class="library-item-number">${index + 1}</div>
+                        <img src="${imageUrl}" alt="${book.title}" class="library-item-image">
+                        <div class="library-item-info">
+                            <h3 class="library-item-title">${book.title}</h3>
+                            <p class="library-item-author">by ${book.author}</p>
+                            <p class="library-item-date">Saved on ${formattedDate}</p>
+                            <button class="library-remove-btn" data-index="${index}">Remove from Library</button>
+                        </div>
+                    `;
+                    
+                    // Add click handler to view book details
+                    bookItem.addEventListener('click', (e) => {
+                        // Don't trigger if clicking the remove button
+                        if (!e.target.classList.contains('library-remove-btn')) {
+                            this.closeLibrary();
+                            openBookModal(book, index, '✦', imageUrl);
+                        }
+                    });
+                    
+                    booksContainer.appendChild(bookItem);
+                });
+                
+                // Add event delegation for remove buttons
+                booksContainer.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('library-remove-btn')) {
+                        e.stopPropagation();
+                        const index = parseInt(e.target.dataset.index);
+                        if (!isNaN(index) && index >= 0 && index < sortedBooks.length) {
+                            this.removeBook(sortedBooks[index]);
+                            this.showLibrary(); // Refresh the library display
+                        }
+                    }
+                });
             }
             
-            return [];
+            // Add clear library button if there are books
+            let clearLibraryBtn = null;
+            if (this.books.length > 0) {
+                clearLibraryBtn = document.createElement('button');
+                clearLibraryBtn.className = 'clear-library-btn';
+                clearLibraryBtn.textContent = 'Clear Entire Library';
+                
+                clearLibraryBtn.addEventListener('click', () => {
+                    if (confirm('Are you sure you want to clear your entire mystical library? This cannot be undone.')) {
+                        this.clearLibrary();
+                        this.showLibrary(); // Refresh the display
+                    }
+                });
+            }
+            
+            // Close button
+            const closeButton = document.createElement('button');
+            closeButton.className = 'modal-close';
+            closeButton.textContent = 'Close Library';
+            closeButton.addEventListener('click', () => this.closeLibrary());
+            
+            // Assemble modal
+            modalContent.appendChild(modalHeader);
+            modalContent.appendChild(booksContainer);
+            if (clearLibraryBtn) {
+                modalContent.appendChild(clearLibraryBtn);
+            }
+            modalContent.appendChild(closeButton);
+            
+            // Add to overlay
+            libraryModal.innerHTML = '';
+            libraryModal.appendChild(modalContent);
+            
+            // Show modal
+            libraryModal.classList.add('active');
+            
+            // Prevent scrolling
+            document.body.style.overflow = 'hidden';
+        },
+        
+        // Close the library modal
+        closeLibrary: function() {
+            const modal = document.getElementById('library-modal-overlay');
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        },
+        
+        // Clear all books from library
+        clearLibrary: function() {
+            this.books = [];
+            this.saveToStorage();
+            this.updateLibraryCount();
         }
     };
 
@@ -172,25 +334,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     throw new Error(data.message || 'Error getting recommendations');
                 }
                 
-                // Process the recommendations using our library function
-                const processedRecommendations = bookLibrary.processRecommendations(data.recommendations);
-                
-                // Save to cache for future use
-                bookLibrary.saveToCache(processedRecommendations);
-                
                 // Display recommendations
-                displayRecommendations(processedRecommendations);
+                displayRecommendations(data.recommendations);
                 
             } catch (error) {
                 console.error('Error:', error);
                 alert('Error getting recommendations: ' + error.message);
-                
-                // Try to display cached recommendations if available
-                const cachedRecommendations = bookLibrary.getFromCache();
-                if (cachedRecommendations.length > 0) {
-                    console.log('Using cached recommendations');
-                    displayRecommendations(cachedRecommendations);
-                }
             } finally {
                 // Hide loading spinner
                 document.getElementById('loading').style.display = 'none';
@@ -200,30 +349,6 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('Form element not found!');
     }
     
-    // Create modal overlay immediately on page load to ensure it's available
-    if (!document.getElementById('modal-overlay')) {
-        const modalOverlay = document.createElement('div');
-        modalOverlay.id = 'modal-overlay';
-        modalOverlay.className = 'modal-overlay';
-        modalOverlay.innerHTML = '<div class="book-modal"></div>';
-        
-        // Close modal when clicking outside the modal content
-        modalOverlay.addEventListener('click', function(e) {
-            if (e.target === modalOverlay) {
-                closeModal();
-            }
-        });
-        
-        document.body.appendChild(modalOverlay);
-    }
-    
-    // Close modal on escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeModal();
-        }
-    });
-    
     function displayRecommendations(recommendations) {
         const bookListElement = document.getElementById('book-list');
         bookListElement.innerHTML = '';
@@ -231,12 +356,39 @@ document.addEventListener('DOMContentLoaded', function() {
         // Tarot symbols to rotate through
         const tarotSymbols = ['☽', '☼', '★', '♆', '⚶', '☿', '♀', '♃', '♄', '⚸'];
         
+        // Create modal overlay if it doesn't exist
+        if (!document.getElementById('modal-overlay')) {
+            const modalOverlay = document.createElement('div');
+            modalOverlay.id = 'modal-overlay';
+            modalOverlay.className = 'modal-overlay';
+            modalOverlay.innerHTML = '<div class="book-modal"></div>';
+            
+            // Close modal when clicking outside the modal content
+            modalOverlay.addEventListener('click', function(e) {
+                if (e.target === modalOverlay) {
+                    closeModal();
+                }
+            });
+            
+            // Close modal on escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeModal();
+                }
+            });
+            
+            document.body.appendChild(modalOverlay);
+        }
+        
         recommendations.forEach((book, index) => {
             const bookCard = document.createElement('div');
             bookCard.className = 'book-card';
             
             // Use the provided image URL or a placeholder
             const imageUrl = book.imageUrl || `/api/placeholder/300/450`;
+            
+            // Check if book is in library
+            const isInLibrary = libraryManager.isInLibrary(book);
             
             // Add tarot card elements and structure
             bookCard.innerHTML = `
@@ -246,14 +398,40 @@ document.addEventListener('DOMContentLoaded', function() {
                     <h3 class="book-title">${book.title}</h3>
                     <p class="book-author">by ${book.author}</p>
                     <p class="read-more">Click to reveal the oracle's wisdom</p>
+                    <button class="library-toggle-btn ${isInLibrary ? 'in-library' : ''}">
+                        ${isInLibrary ? '✓ In Library' : '+ Add to Library'}
+                    </button>
                     <div class="tarot-symbol">${tarotSymbols[index % tarotSymbols.length]}</div>
                 </div>
             `;
             
             // Add click event to open modal with book details
-            bookCard.addEventListener('click', function() {
-                openBookModal(book, index, tarotSymbols[index % tarotSymbols.length], imageUrl);
+            bookCard.addEventListener('click', function(e) {
+                // Don't trigger modal if clicking the library button
+                if (!e.target.classList.contains('library-toggle-btn')) {
+                    openBookModal(book, index, tarotSymbols[index % tarotSymbols.length], imageUrl);
+                }
             });
+            
+            // Find and add event listener to library toggle button
+            const libraryToggleBtn = bookCard.querySelector('.library-toggle-btn');
+            if (libraryToggleBtn) {
+                libraryToggleBtn.addEventListener('click', function(e) {
+                    e.stopPropagation(); // Prevent opening the modal
+                    
+                    if (libraryManager.isInLibrary(book)) {
+                        // Remove from library
+                        libraryManager.removeBook(book);
+                        libraryToggleBtn.classList.remove('in-library');
+                        libraryToggleBtn.textContent = '+ Add to Library';
+                    } else {
+                        // Add to library
+                        libraryManager.addBook(book);
+                        libraryToggleBtn.classList.add('in-library');
+                        libraryToggleBtn.textContent = '✓ In Library';
+                    }
+                });
+            }
             
             bookListElement.appendChild(bookCard);
         });
@@ -275,18 +453,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to open the book modal
     function openBookModal(book, index, symbol, imageUrl) {
         const modalOverlay = document.getElementById('modal-overlay');
-        if (!modalOverlay) {
-            console.error('Modal overlay not found');
-            return;
-        }
-        
         const bookModal = modalOverlay.querySelector('.book-modal');
-        if (!bookModal) {
-            console.error('Book modal not found');
-            return;
-        }
         
-        // Set modal content with enhanced mystical information
+        // Check if the book is in the library
+        const isInLibrary = libraryManager.isInLibrary(book);
+        
+        // Set modal content
         bookModal.innerHTML = `
             <div class="modal-number">${romanize(index + 1)}</div>
             <div class="modal-symbol">${symbol}</div>
@@ -295,34 +467,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 <p class="modal-author">by ${book.author}</p>
             </div>
             <img src="${imageUrl}" alt="${book.title}" class="modal-image">
-            <div class="modal-content">
-                <p class="modal-description">${book.description}</p>
-                
-                ${book.genres && book.genres.length > 0 ? 
-                  `<div class="modal-genres">
-                     <span class="modal-label">Mystical Alignments:</span>
-                     <div class="genre-tags">${book.genres.map(genre => `<span class="genre-tag">${genre}</span>`).join('')}</div>
-                   </div>` : ''}
-                
-                ${book.celestialAlignment ? 
-                  `<div class="modal-alignment">
-                     <span class="modal-label">Celestial Influence:</span>
-                     <span class="alignment-text">${book.celestialAlignment}</span>
-                   </div>` : ''}
-                
-                ${book.readingMood ? 
-                  `<div class="modal-mood">
-                     <span class="modal-label">Oracle's Guidance:</span>
-                     <span class="mood-text">${book.readingMood}</span>
-                   </div>` : ''}
+            <p class="modal-description">${book.description}</p>
+            <div class="modal-actions">
+                <button class="library-toggle-modal-btn ${isInLibrary ? 'in-library' : ''}">
+                    ${isInLibrary ? '✓ In Your Library' : '✦ Add to Library ✦'}
+                </button>
+                <button class="modal-close">Close Revelation</button>
             </div>
-            <button class="modal-close">Close Revelation</button>
         `;
         
         // Add event listener to close button
-        const closeButton = bookModal.querySelector('.modal-close');
-        if (closeButton) {
-            closeButton.addEventListener('click', closeModal);
+        bookModal.querySelector('.modal-close').addEventListener('click', closeModal);
+        
+        // Add event listener to library toggle button
+        const libraryToggleBtn = bookModal.querySelector('.library-toggle-modal-btn');
+        if (libraryToggleBtn) {
+            libraryToggleBtn.addEventListener('click', function() {
+                if (libraryManager.isInLibrary(book)) {
+                    // Remove from library
+                    libraryManager.removeBook(book);
+                    libraryToggleBtn.classList.remove('in-library');
+                    libraryToggleBtn.textContent = '✦ Add to Library ✦';
+                } else {
+                    // Add to library
+                    libraryManager.addBook(book);
+                    libraryToggleBtn.classList.add('in-library');
+                    libraryToggleBtn.textContent = '✓ In Your Library';
+                }
+            });
         }
         
         // Show the modal
@@ -335,12 +507,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to close the modal
     function closeModal() {
         const modalOverlay = document.getElementById('modal-overlay');
-        if (modalOverlay) {
-            modalOverlay.classList.remove('active');
-            
-            // Re-enable body scrolling
-            document.body.style.overflow = '';
-        }
+        modalOverlay.classList.remove('active');
+        
+        // Re-enable body scrolling
+        document.body.style.overflow = '';
     }
     
     // Function to convert numbers to Roman numerals for the tarot cards
@@ -380,21 +550,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Add stars to the background
-    function createStars() {
-        const stars = document.getElementById('stars');
-        if (stars) {
-            for (let i = 0; i < 100; i++) {
-                const star = document.createElement('div');
-                star.className = 'star';
-                star.style.top = `${Math.random() * 100}%`;
-                star.style.left = `${Math.random() * 100}%`;
-                star.style.animationDelay = `${Math.random() * 5}s`;
-                stars.appendChild(star);
-            }
-        }
-    }
-    
-    // Call function to create stars
-    createStars();
+    // Initialize the library manager
+    libraryManager.init();
 });
