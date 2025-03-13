@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const mood = document.getElementById('mood').value;
         const length = document.getElementById('length').value;
         const additionalInfo = document.getElementById('additional-info').value;
-        const numRecommendations = document.getElementById('num-recommendations').value;
         
         // Show loading spinner
         document.getElementById('loading').style.display = 'block';
@@ -27,8 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     genres,
                     mood,
                     length,
-                    additionalInfo,
-                    numRecommendations: parseInt(numRecommendations)
+                    additionalInfo
                 })
             });
             
@@ -36,12 +34,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (data.error) {
                 throw new Error(data.message || 'Error getting recommendations');
-            }
-            
-            // Check if recommendations exist and is an array
-            if (!data.recommendations || !Array.isArray(data.recommendations)) {
-                console.error('Invalid response format:', data);
-                throw new Error('Invalid response from recommendation service');
             }
             
             // Display recommendations
@@ -57,11 +49,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     function displayRecommendations(recommendations) {
-        if (!recommendations || !Array.isArray(recommendations) || recommendations.length === 0) {
-            alert('No recommendations found. Please try different preferences.');
-            return;
-        }
-        
         const bookListElement = document.getElementById('book-list');
         bookListElement.innerHTML = '';
         
@@ -85,12 +72,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         document.getElementById('result-section').style.display = 'block';
-        
-        // Scroll to results
-        document.getElementById('result-section').scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-        });
     }
 
     // Dark Mode Toggle Implementation
