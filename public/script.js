@@ -1,4 +1,133 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Library function for book recommendation processing
+    const bookLibrary = {
+        // Store cached recommendations
+        cachedRecommendations: [],
+        
+        // Process book recommendations based on user input
+        processRecommendations: function(userInput) {
+            // This function will be called by the fetch API response handler
+            // It performs additional processing on the raw API response
+            
+            if (!userInput || !Array.isArray(userInput)) {
+                return [];
+            }
+            
+            // Process and enhance each recommendation
+            return userInput.map(book => {
+                // Add mystical descriptions if not present
+                if (!book.description || book.description.trim() === '') {
+                    book.description = this.generateMysticalDescription(book.title, book.author);
+                }
+                
+                // Add genre tags if not present
+                if (!book.genres || !Array.isArray(book.genres) || book.genres.length === 0) {
+                    book.genres = this.inferGenres(book.title, book.description);
+                }
+                
+                // Add celestial alignment
+                book.celestialAlignment = this.getCelestialAlignment();
+                
+                // Add reading mood
+                book.readingMood = this.getReadingMood(book);
+                
+                return book;
+            });
+        },
+        
+        // Generate a mystical description for books without one
+        generateMysticalDescription: function(title, author) {
+            const mysticalPhrases = [
+                "The cosmic energies align when one opens this tome of wisdom.",
+                "As the moon waxes and wanes, so too does the journey within these pages.",
+                "The ancient stars have guided many souls to the revelations contained herein.",
+                "Like a tarot reading that unveils hidden truths, this book reveals layers of meaning with each reading.",
+                "The universe conspired to bring this book into your path at this precise moment."
+            ];
+            
+            const randomPhrase = mysticalPhrases[Math.floor(Math.random() * mysticalPhrases.length)];
+            return `${randomPhrase} "${title}" by ${author} resonates with the seeker's journey, offering insights that transcend the ordinary. The words within speak directly to those who listen with both mind and spirit.`;
+        },
+        
+        // Infer genres based on title and description
+        inferGenres: function(title, description) {
+            const genreKeywords = {
+                'Fantasy': ['magic', 'wizard', 'dragon', 'spell', 'kingdom', 'quest', 'sword', 'mythical', 'creature'],
+                'Mystery': ['detective', 'crime', 'solve', 'murder', 'case', 'investigation', 'clue', 'suspicious'],
+                'Science Fiction': ['space', 'alien', 'future', 'technology', 'robot', 'galaxy', 'planet', 'dystopian'],
+                'Romance': ['love', 'heart', 'passion', 'relationship', 'marriage', 'affection', 'desire'],
+                'Historical': ['history', 'century', 'ancient', 'era', 'period', 'historical', 'past', 'war'],
+                'Spiritual': ['spirit', 'soul', 'journey', 'enlightenment', 'wisdom', 'meditation', 'cosmic'],
+                'Self-Help': ['growth', 'improve', 'success', 'habit', 'motivation', 'inspire', 'change']
+            };
+            
+            const contentToCheck = (title + ' ' + description).toLowerCase();
+            const matchedGenres = [];
+            
+            for (const [genre, keywords] of Object.entries(genreKeywords)) {
+                if (keywords.some(keyword => contentToCheck.includes(keyword))) {
+                    matchedGenres.push(genre);
+                }
+            }
+            
+            // If no genres matched, return some default mystical genres
+            return matchedGenres.length > 0 ? matchedGenres : ['Mystical', 'Esoteric Wisdom', 'Transformative'];
+        },
+        
+        // Get a celestial alignment for the book
+        getCelestialAlignment: function() {
+            const celestialBodies = ['Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
+            const zodiacSigns = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+            const aspects = ['Conjunction', 'Trine', 'Square', 'Opposition', 'Sextile'];
+            
+            const randomBody = celestialBodies[Math.floor(Math.random() * celestialBodies.length)];
+            const randomSign = zodiacSigns[Math.floor(Math.random() * zodiacSigns.length)];
+            const randomAspect = aspects[Math.floor(Math.random() * aspects.length)];
+            
+            return `${randomBody} in ${randomSign} ${randomAspect}`;
+        },
+        
+        // Get a reading mood for the book
+        getReadingMood: function(book) {
+            const moods = [
+                'Best read under moonlight for full effect',
+                'Read during dawn for heightened awareness',
+                'Perfect for contemplative evening reflection',
+                'Connects most strongly during the full moon',
+                'Meditate before reading to unlock deeper meanings',
+                'Read with a crystal nearby to amplify insights',
+                'Most powerful when read in solitude and silence',
+                'Share with kindred spirits for collective wisdom'
+            ];
+            
+            return moods[Math.floor(Math.random() * moods.length)];
+        },
+        
+        // Save recommendations to cache
+        saveToCache: function(recommendations) {
+            this.cachedRecommendations = recommendations;
+            // You could also save to localStorage for persistence between sessions
+            localStorage.setItem('cachedBookRecommendations', JSON.stringify(recommendations));
+        },
+        
+        // Get recommendations from cache
+        getFromCache: function() {
+            // Try to get from memory first
+            if (this.cachedRecommendations.length > 0) {
+                return this.cachedRecommendations;
+            }
+            
+            // Try to get from localStorage
+            const cached = localStorage.getItem('cachedBookRecommendations');
+            if (cached) {
+                this.cachedRecommendations = JSON.parse(cached);
+                return this.cachedRecommendations;
+            }
+            
+            return [];
+        }
+    };
+
     // Handle form submission
     const form = document.getElementById('recommendation-form');
     
@@ -43,12 +172,25 @@ document.addEventListener('DOMContentLoaded', function() {
                     throw new Error(data.message || 'Error getting recommendations');
                 }
                 
+                // Process the recommendations using our library function
+                const processedRecommendations = bookLibrary.processRecommendations(data.recommendations);
+                
+                // Save to cache for future use
+                bookLibrary.saveToCache(processedRecommendations);
+                
                 // Display recommendations
-                displayRecommendations(data.recommendations);
+                displayRecommendations(processedRecommendations);
                 
             } catch (error) {
                 console.error('Error:', error);
                 alert('Error getting recommendations: ' + error.message);
+                
+                // Try to display cached recommendations if available
+                const cachedRecommendations = bookLibrary.getFromCache();
+                if (cachedRecommendations.length > 0) {
+                    console.log('Using cached recommendations');
+                    displayRecommendations(cachedRecommendations);
+                }
             } finally {
                 // Hide loading spinner
                 document.getElementById('loading').style.display = 'none';
@@ -135,7 +277,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const modalOverlay = document.getElementById('modal-overlay');
         const bookModal = modalOverlay.querySelector('.book-modal');
         
-        // Set modal content
+        // Set modal content with enhanced mystical information
         bookModal.innerHTML = `
             <div class="modal-number">${romanize(index + 1)}</div>
             <div class="modal-symbol">${symbol}</div>
@@ -144,7 +286,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 <p class="modal-author">by ${book.author}</p>
             </div>
             <img src="${imageUrl}" alt="${book.title}" class="modal-image">
-            <p class="modal-description">${book.description}</p>
+            <div class="modal-content">
+                <p class="modal-description">${book.description}</p>
+                
+                ${book.genres && book.genres.length > 0 ? 
+                  `<div class="modal-genres">
+                     <span class="modal-label">Mystical Alignments:</span>
+                     <div class="genre-tags">${book.genres.map(genre => `<span class="genre-tag">${genre}</span>`).join('')}</div>
+                   </div>` : ''}
+                
+                ${book.celestialAlignment ? 
+                  `<div class="modal-alignment">
+                     <span class="modal-label">Celestial Influence:</span>
+                     <span class="alignment-text">${book.celestialAlignment}</span>
+                   </div>` : ''}
+                
+                ${book.readingMood ? 
+                  `<div class="modal-mood">
+                     <span class="modal-label">Oracle's Guidance:</span>
+                     <span class="mood-text">${book.readingMood}</span>
+                   </div>` : ''}
+            </div>
             <button class="modal-close">Close Revelation</button>
         `;
         
@@ -200,4 +362,22 @@ document.addEventListener('DOMContentLoaded', function() {
         document.documentElement.setAttribute('data-theme', newTheme);
         localStorage.setItem('theme', newTheme);
     });
+    
+    // Add stars to the background
+    function createStars() {
+        const stars = document.getElementById('stars');
+        if (stars) {
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.animationDelay = `${Math.random() * 5}s`;
+                stars.appendChild(star);
+            }
+        }
+    }
+    
+    // Call function to create stars
+    createStars();
 });
