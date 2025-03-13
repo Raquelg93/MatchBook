@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show loading spinner
         document.getElementById('loading').style.display = 'block';
         document.getElementById('result-section').style.display = 'none';
+        document.getElementById('result-section').classList.remove('visible');
         
         try {
             // Call our serverless function
@@ -52,19 +53,25 @@ document.addEventListener('DOMContentLoaded', function() {
         const bookListElement = document.getElementById('book-list');
         bookListElement.innerHTML = '';
         
-        recommendations.forEach(book => {
+        // Tarot symbols to rotate through
+        const tarotSymbols = ['☽', '☼', '★', '♆', '⚶', '☿', '♀', '♃', '♄', '⚸'];
+        
+        recommendations.forEach((book, index) => {
             const bookCard = document.createElement('div');
             bookCard.className = 'book-card';
             
             // Use the provided image URL or a placeholder
-            const imageUrl = book.imageUrl || `/api/placeholder/300/200`;
+            const imageUrl = book.imageUrl || `/api/placeholder/300/450`;
             
+            // Add tarot card elements and structure
             bookCard.innerHTML = `
+                <div class="tarot-number">${romanize(index + 1)}</div>
                 <img src="${imageUrl}" alt="${book.title} cover">
                 <div class="book-info">
                     <h3 class="book-title">${book.title}</h3>
                     <p class="book-author">by ${book.author}</p>
                     <p class="book-description">${book.description}</p>
+                    <div class="tarot-symbol">${tarotSymbols[index % tarotSymbols.length]}</div>
                 </div>
             `;
             
@@ -72,6 +79,34 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         document.getElementById('result-section').style.display = 'block';
+        
+        // Add smooth scroll to results
+        document.getElementById('result-section').scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+        
+        // Trigger the visibility animation
+        setTimeout(() => {
+            document.getElementById('result-section').classList.add('visible');
+        }, 100);
+    }
+    
+    // Function to convert numbers to Roman numerals for the tarot cards
+    function romanize(num) {
+        const roman = {
+            M: 1000, CM: 900, D: 500, CD: 400, C: 100, XC: 90,
+            L: 50, XL: 40, X: 10, IX: 9, V: 5, IV: 4, I: 1
+        };
+        let str = '';
+        
+        for (let i of Object.keys(roman)) {
+            const q = Math.floor(num / roman[i]);
+            num -= q * roman[i];
+            str += i.repeat(q);
+        }
+        
+        return str;
     }
 
     // Dark Mode Toggle Implementation
