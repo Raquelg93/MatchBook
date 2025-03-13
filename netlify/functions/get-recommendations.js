@@ -23,28 +23,22 @@ exports.handler = async function (event, context) {
 
         // Create prompt for OpenAI
         const prompt = `
-      Based on the following preferences, recommend 5 books:
-      
-      Favorite books: ${favoriteBooks}
-      ${genres ? `Preferred genres: ${genres}` : ''}
-      ${mood ? `Preferred mood: ${mood}` : ''}
-      ${length ? `Length preference: ${length}` : ''}
-      ${additionalInfo ? `Additional information: ${additionalInfo}` : ''}
-      
-      Provide a detailed response in JSON format with the following structure:
-      {
-        "recommendations": [
-          {
-            "title": "Book Title",
-            "author": "Author Name",
-            "description": "A brief description of the book and why it was recommended based on the preferences (about 2-3 sentences)",
-            "imageUrl": "A placeholder URL for a book cover image"
-          },
-          ...
-        ]
-      }
-    `;
-
+  Based on the following preferences, recommend 5 books:
+  
+  Favorite books: ${favoriteBooks}
+  ${genres ? `Preferred genres: ${genres}` : ''}
+  ${mood ? `Preferred mood: ${mood}` : ''}
+  ${length ? `Length preference: ${length}` : ''}
+  ${additionalInfo ? `Additional information: ${additionalInfo}` : ''}
+  
+  For each book, include:
+  1. Title
+  2. Author
+  3. Description (2-3 sentences)
+  4. A link to an appropriate book cover image from a public domain source or openlibrary.org
+  
+  Provide a detailed response in JSON format...
+`;
         // Call OpenAI API
         const response = await axios.post('https://api.openai.com/v1/chat/completions', {
             model: 'gpt-3.5-turbo',
