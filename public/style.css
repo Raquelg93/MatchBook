@@ -394,6 +394,7 @@ select:focus {
     background-blend-mode: overlay;
     animation: cardReveal 0.8s ease forwards;
     opacity: 0;
+    cursor: pointer;
 }
 
 /* Gold border around the card */
@@ -434,7 +435,7 @@ select:focus {
 
 /* Card hover effects */
 .book-card:hover {
-    transform: translateY(-12px) rotateY(5deg);
+    transform: translateY(-8px) rotateY(5deg);
     box-shadow: -10px 15px 35px var(--shadow-hover);
 }
 
@@ -498,19 +499,49 @@ select:focus {
     text-align: center;
 }
 
-/* Style for the book description */
+/* Initial state - hide description */
 .book-description {
+    display: none;
     font-size: 0.9rem;
     color: var(--text);
     line-height: 1.6;
     text-align: center;
-    flex-grow: 1;
-    /* Remove or increase these properties: */
-    display: -webkit-box;
-    -webkit-line-clamp: 12; /* Increased from 6 to 12 lines */
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    margin-bottom: 1rem;
+    max-height: 150px;
+    overflow-y: auto;
+    padding-right: 5px;
+    margin: 1rem 0;
+}
+
+/* Add a "Read more" text */
+.read-more {
+    display: block;
+    font-family: 'Cinzel', serif;
+    font-size: 0.8rem;
+    color: var(--accent);
+    text-align: center;
+    margin: 0.5rem 0 0;
+    opacity: 0.8;
+}
+
+/* Expanded state styling */
+.book-card.expanded {
+    max-height: none;
+    transform: scale(1.03);
+    z-index: 10;
+}
+
+.book-card.expanded .book-description {
+    display: block;
+    animation: fadeIn 0.5s ease forwards;
+}
+
+.book-card.expanded .read-more {
+    display: none;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 /* Add tarot card number to each card */
