@@ -32,7 +32,7 @@ const prompt = `
   ${length ? `Length preference: ${length}` : ''}
   ${additionalInfo ? `Additional information: ${additionalInfo}` : ''}
   
-  In your description, SPECIFICALLY explain how each recommendation relates to one of the user's favorite books. Focus on concrete similarities in writing style, character types, plot structure, and thematic elements.
+  In your description, SPECIFICALLY explain how each recommendation relates to one of the user's favorite books. Focus on concrete similarities in writing style, character types, plot structure, and thematic elements. Also give the description of the book.
   
   Provide a detailed response in JSON format with the following structure:
   {
@@ -40,7 +40,7 @@ const prompt = `
       {
         "title": "Book Title",
         "author": "Author Name",
-        "description": "A brief description of the book that explains SPECIFICALLY how it is similar to one of the user's favorite books."
+        "description": "A brief description of the book that explains SPECIFICALLY how it is similar to one of the user's favorite books, and the book description"
       }
     ]
   }
