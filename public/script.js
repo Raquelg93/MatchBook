@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
             modalHeader.className = 'modal-header';
             modalHeader.innerHTML = `
                 <h2 class="modal-title">Your Mystical Library</h2>
-                <p class="modal-author">Books saved from the Oracle's revelations</p>
+                <p class="modal-author">Books saved from the Recommendations</p>
             `;
             
             // Create book container
@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 booksContainer.innerHTML = `
                     <div class="empty-library">
                         <p>Your mystical library awaits its first tome...</p>
-                        <p>Click "Save to Library" on any book revelation to begin your collection.</p>
+                        <p>Click "Save to Library" on any book recommendation to begin your collection.</p>
                     </div>
                 `;
             } else {
@@ -564,7 +564,7 @@ Ensure the recommendations are diverse yet relevant, and provide books that will
                 <button class="library-toggle-modal-btn ${isInLibrary ? 'in-library' : ''}">
                     ${isInLibrary ? '✓ In Your Library' : '✦ Add to Library ✦'}
                 </button>
-                <button class="modal-close">Close Revelation</button>
+                <button class="modal-close">Close Recommendation</button>
             </div>
         `;
         
