@@ -18,55 +18,31 @@ exports.handler = async function(event, context) {
     }
     
     // Parse the request body
-const requestBody = JSON.parse(event.body);
-const { favoriteBooks, favoriteAuthors, genres, additionalInfo } = requestBody;
-
-// Create prompt for OpenAI
-const prompt = `
-  Based on the following preferences, recommend 5 HIGHLY SIMILAR books to the ones listed by the user. For each book they mentioned, find books that closely match its style, themes, plot elements, and writing tone:
-  
-  Favorite books: ${favoriteBooks}
-  ${favoriteAuthors ? `Favorite authors: ${favoriteAuthors}` : ''}
-  ${genres ? `Preferred genres: ${genres}` : ''}
-  ${additionalInfo ? `Additional information: ${additionalInfo}` : ''}
-  
-  In your description, SPECIFICALLY explain how each recommendation relates to one of the user's favorite books. Focus on concrete similarities in writing style, character types, plot structure, and thematic elements.
-  
-  Provide a detailed response in JSON format with the following structure:
-  {
-    "recommendations": [
-      {
-        "title": "Book Title",
-        "author": "Author Name",
-        "description": "A brief description of the book that explains SPECIFICALLY how it is similar to one of the user's favorite books."
-      }
-    ]
-  }
-`;
+    const requestBody = JSON.parse(event.body);
+    const { favoriteBooks, favoriteAuthors, genres, additionalInfo } = requestBody;
     
-    // Create prompt for OpenAI
-const prompt = `
-  Based on the following preferences, recommend 5 HIGHLY SIMILAR books to the ones listed by the user. For each book they mentioned, find books that closely match its style, themes, plot elements, and writing tone:
-  
-  Favorite books: ${favoriteBooks}
-  ${favoriteAuthors ? `Favorite authors: ${favoriteAuthors}` : ''}
-  ${genres ? `Preferred genres: ${genres}` : ''}
-  ${length ? `Length preference: ${length}` : ''}
-  ${additionalInfo ? `Additional information: ${additionalInfo}` : ''}
-  
-  In your description, SPECIFICALLY explain how each recommendation relates to one of the user's favorite books. Focus on concrete similarities in writing style, character types, plot structure, and thematic elements. Also give the description of the book.
-  
-  Provide a detailed response in JSON format with the following structure:
-  {
-    "recommendations": [
+    // Create prompt for OpenAI - only one definition
+    const prompt = `
+      Based on the following preferences, recommend 5 HIGHLY SIMILAR books to the ones listed by the user. For each book they mentioned, find books that closely match its style, themes, plot elements, and writing tone:
+      
+      Favorite books: ${favoriteBooks}
+      ${favoriteAuthors ? `Favorite authors: ${favoriteAuthors}` : ''}
+      ${genres ? `Preferred genres: ${genres}` : ''}
+      ${additionalInfo ? `Additional information: ${additionalInfo}` : ''}
+      
+      In your description, SPECIFICALLY explain how each recommendation relates to one of the user's favorite books. Focus on concrete similarities in writing style, character types, plot structure, and thematic elements. Also give the description of the book.
+      
+      Provide a detailed response in JSON format with the following structure:
       {
-        "title": "Book Title",
-        "author": "Author Name",
-        "description": "A brief description of the book that explains SPECIFICALLY how it is similar to one of the user's favorite books, and the book description"
+        "recommendations": [
+          {
+            "title": "Book Title",
+            "author": "Author Name",
+            "description": "A brief description of the book that explains SPECIFICALLY how it is similar to one of the user's favorite books, and the book description"
+          }
+        ]
       }
-    ]
-  }
-`;
+    `;
     
     // Call OpenAI API
     const response = await axios.post('https://api.openai.com/v1/chat/completions', {
@@ -94,13 +70,45 @@ const prompt = `
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     
     if (!jsonMatch) {
+      console.log('Failed to extract JSON from response:', content);
       return {
         statusCode: 500,
-        body: JSON.stringify({ error: 'Could not parse JSON response from OpenAI' })
+        body: JSON.stringify({ 
+          error: 'Could not parse JSON response from OpenAI',
+          rawContent: content.substring(0, 500) // First 500 chars for debugging
+        })
       };
     }
     
-    const recommendationsData = JSON.parse(jsonMatch[0]);
+    // Add more robust error handling for JSON parsing
+    let recommendationsData;
+    try {
+      recommendationsData = JSON.parse(jsonMatch[0]);
+      
+      // Validate that recommendations exists and is an array
+      if (!recommendationsData.recommendations || !Array.isArray(recommendationsData.recommendations)) {
+        console.log('Invalid response structure:', recommendationsData);
+        // Provide a fallback recommendation
+        recommendationsData = {
+          recommendations: [{
+            title: "Recommendation Error",
+            author: "Please try again",
+            description: "The recommendation system couldn't generate proper results. Please try with different books or authors."
+          }]
+        };
+      }
+    } catch (error) {
+      console.log('JSON parse error:', error);
+      console.log('Raw content:', content);
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ 
+          error: 'Failed to parse response', 
+          message: error.message,
+          rawContent: content.substring(0, 500)
+        })
+      };
+    }
     
     // Add book cover images using Google Books API
     const recommendations = recommendationsData.recommendations;
@@ -152,5 +160,3 @@ const prompt = `
     };
   }
 };
-
-
