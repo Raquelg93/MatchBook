@@ -18,8 +18,31 @@ exports.handler = async function(event, context) {
     }
     
     // Parse the request body
-    const requestBody = JSON.parse(event.body);
-    const { favoriteBooks, favoriteAuthors, genres, mood, length, additionalInfo } = requestBody;
+const requestBody = JSON.parse(event.body);
+const { favoriteBooks, favoriteAuthors, genres, additionalInfo } = requestBody;
+
+// Create prompt for OpenAI
+const prompt = `
+  Based on the following preferences, recommend 5 HIGHLY SIMILAR books to the ones listed by the user. For each book they mentioned, find books that closely match its style, themes, plot elements, and writing tone:
+  
+  Favorite books: ${favoriteBooks}
+  ${favoriteAuthors ? `Favorite authors: ${favoriteAuthors}` : ''}
+  ${genres ? `Preferred genres: ${genres}` : ''}
+  ${additionalInfo ? `Additional information: ${additionalInfo}` : ''}
+  
+  In your description, SPECIFICALLY explain how each recommendation relates to one of the user's favorite books. Focus on concrete similarities in writing style, character types, plot structure, and thematic elements.
+  
+  Provide a detailed response in JSON format with the following structure:
+  {
+    "recommendations": [
+      {
+        "title": "Book Title",
+        "author": "Author Name",
+        "description": "A brief description of the book that explains SPECIFICALLY how it is similar to one of the user's favorite books."
+      }
+    ]
+  }
+`;
     
     // Create prompt for OpenAI
 const prompt = `
