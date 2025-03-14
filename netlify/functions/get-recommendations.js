@@ -19,18 +19,28 @@ exports.handler = async function(event, context) {
     
     // Parse the request body
     const requestBody = JSON.parse(event.body);
-    const { favoriteBooks, favoriteAuthors, genres, mood, length, additionalInfo } = requestBody;
+    const { favoriteBooks, favoriteAuthors, genres, mood, length, additionalInfo, enhancedPrompt } = requestBody;
     
-    // Create prompt for OpenAI
+    // Create enhanced prompt for OpenAI with stronger emphasis on similarity
     const prompt = `
-      Based on the books i input, recommend 5 books in the same genre, keeping in mind themes, subgenres, emotional response:
+      Generate personalized book recommendations that are VERY SIMILAR to the books and authors mentioned by the reader. Focus on providing books that strongly match the style, themes, tone, and content of their favorites.
       
-      Favorite books: ${favoriteBooks}
-      ${favoriteAuthors ? `Favorite authors: ${favoriteAuthors}` : ''}
-      ${genres ? `Preferred genres: ${genres}` : ''}
-      ${mood ? `Preferred mood: ${mood}` : ''}
-      ${length ? `Length preference: ${length}` : ''}
-      ${additionalInfo ? `Additional information: ${additionalInfo}` : ''}
+      Reader's preferences:
+      - Favorite books: ${favoriteBooks || 'Not specified'}
+      - Favorite authors: ${favoriteAuthors || 'Not specified'}
+      - Genres of interest: ${genres || 'Not specified'}
+      - Current mood: ${mood || 'Not specified'}
+      - Preferred length: ${length || 'Not specified'}
+      
+      Additional context: ${additionalInfo || 'Not provided'}
+      
+      IMPORTANT: The recommendations should be HIGHLY SIMILAR to the books they mentioned. For each book they listed, provide 1-2 titles that:
+      1. Share the same writing style
+      2. Feature similar themes, settings, or character dynamics
+      3. Would strongly appeal to fans of that specific book
+      4. Provide a similar reading experience or emotional response
+      
+      Prioritize books that are direct matches in style and content over more loosely related titles. If they mentioned specific elements they enjoyed (like particular characters, settings, or plot devices), focus on books that contain those same elements.
       
       Provide a detailed response in JSON format with the following structure:
       {
@@ -38,7 +48,7 @@ exports.handler = async function(event, context) {
           {
             "title": "Book Title",
             "author": "Author Name",
-            "description": "A brief description of the book and why it was recommended based on the preferences."
+            "description": "A mystical description of the book that connects it to the reader's journey AND SPECIFICALLY explains how this book is similar to one of their mentioned favorites."
           }
         ]
       }
@@ -50,14 +60,14 @@ exports.handler = async function(event, context) {
       messages: [
         {
           role: 'system',
-          content: 'You are a helpful assistant that specializes in book recommendations. Your responses should be in valid JSON format.'
+          content: 'You are a helpful assistant that specializes in book recommendations, with a focus on finding extremely similar books to what users already enjoy. Your responses should be in valid JSON format.'
         },
         {
           role: 'user',
           content: prompt
         }
       ],
-      temperature: 0.7
+      temperature: 0.5  // Lower temperature for more deterministic results
     }, {
       headers: {
         'Content-Type': 'application/json',
@@ -106,6 +116,22 @@ exports.handler = async function(event, context) {
         book.imageUrl = `https://via.placeholder.com/128x192/5b21b6/ffffff?text=${encodeURIComponent(book.title.substring(0, 20))}`;
       }
     }
+    
+    // Add mystical celestial alignment to each recommendation
+    recommendations.forEach(book => {
+      // Generate celestial alignment if not present
+      if (!book.celestialAlignment) {
+        const celestialBodies = ['Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto'];
+        const zodiacSigns = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+        const aspects = ['Conjunction', 'Trine', 'Square', 'Opposition', 'Sextile'];
+        
+        const randomBody = celestialBodies[Math.floor(Math.random() * celestialBodies.length)];
+        const randomSign = zodiacSigns[Math.floor(Math.random() * zodiacSigns.length)];
+        const randomAspect = aspects[Math.floor(Math.random() * aspects.length)];
+        
+        book.celestialAlignment = `${randomBody} in ${randomSign} ${randomAspect}`;
+      }
+    });
     
     // Return the enhanced recommendations
     return {
