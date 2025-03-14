@@ -330,13 +330,19 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Create enhanced recommendation request
         createEnhancedRequest: function() {
-            // Get basic form values
-            const favoriteBooks = document.getElementById('favorite-books')?.value || '';
-            const favoriteAuthors = document.getElementById('favorite-authors')?.value || '';
-            const genres = document.getElementById('genres')?.value || '';
-            const mood = document.getElementById('mood')?.value || '';
-            const length = document.getElementById('length')?.value || '';
-            const additionalInfo = document.getElementById('additional-info')?.value || '';
+           // Get form values
+const favoriteBooks = document.getElementById('favorite-books').value;
+const favoriteAuthors = document.getElementById('favorite-authors').value;
+const genres = document.getElementById('genres').value;
+const additionalInfo = document.getElementById('additional-info').value;
+
+// Create request object
+const requestData = {
+    favoriteBooks,
+    favoriteAuthors,
+    genres,
+    additionalInfo
+};
             
             // Get all user feedback
             const userFeedback = JSON.parse(localStorage.getItem('bookFeedback') || '{}');
