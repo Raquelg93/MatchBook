@@ -356,7 +356,6 @@ const requestData = {
                 favoriteBooks,
                 favoriteAuthors,
                 genres,
-                mood,
                 length,
                 additionalInfo,
                 themes: analyzedThemes,
@@ -366,7 +365,6 @@ const requestData = {
                     favoriteBooks,
                     favoriteAuthors,
                     genres,
-                    mood,
                     length,
                     themes: analyzedThemes,
                     additionalInfo
