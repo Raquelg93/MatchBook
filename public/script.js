@@ -328,21 +328,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 0);
         },
         
-        // Get selected values from multiple-select or checkboxes
-        getSelectedValues: function(elementId) {
-            const element = document.getElementById(elementId);
-            if (!element) return [];
-            
-            if (element.type === 'select-multiple') {
-                return Array.from(element.selectedOptions).map(opt => opt.value);
-            } else if (element.type === 'checkbox') {
-                const checkboxes = document.querySelectorAll(`input[name="${element.name}"]:checked`);
-                return Array.from(checkboxes).map(cb => cb.value);
-            }
-            
-            return [element.value];
-        },
-        
         // Create enhanced recommendation request
         createEnhancedRequest: function() {
             // Get basic form values
@@ -352,22 +337,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const mood = document.getElementById('mood')?.value || '';
             const length = document.getElementById('length')?.value || '';
             const additionalInfo = document.getElementById('additional-info')?.value || '';
-            
-            // Get advanced form values if they exist
-            const readingLevel = document.getElementById('reading-level')?.value || 'Intermediate';
-            const writingStyle = document.getElementById('writing-style')?.value || '';
-            
-            // Get selected themes if the element exists
-            let selectedThemes = [];
-            if (document.getElementById('themes')) {
-                selectedThemes = this.getSelectedValues('themes');
-            }
-            
-            // Get other optional form values
-            const bookAge = document.getElementById('book-age')?.value || '';
-            const emotionalImpact = document.getElementById('emotional-impact')?.value || '';
-            const includeObscureTitles = document.getElementById('include-obscure')?.checked || false;
-            const similarityLevel = document.getElementById('similarity-level')?.value || '3';
             
             // Get all user feedback
             const userFeedback = JSON.parse(localStorage.getItem('bookFeedback') || '{}');
@@ -384,14 +353,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 mood,
                 length,
                 additionalInfo,
-                readingLevel,
-                writingStyle,
-                // Combine selected and analyzed themes, removing duplicates
-                themes: [...new Set([...selectedThemes, ...analyzedThemes])],
-                bookAge,
-                emotionalImpact,
-                includeObscureTitles,
-                similarityLevel,
+                themes: analyzedThemes,
                 userFeedback,
                 // Enhanced prompt for better results
                 enhancedPrompt: this.generateEnhancedPrompt({
@@ -400,13 +362,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     genres,
                     mood,
                     length,
-                    readingLevel,
-                    themes: [...new Set([...selectedThemes, ...analyzedThemes])],
-                    writingStyle,
-                    bookAge,
-                    emotionalImpact,
-                    includeObscureTitles,
-                    similarityLevel,
+                    themes: analyzedThemes,
                     additionalInfo
                 })
             };
@@ -420,13 +376,7 @@ document.addEventListener('DOMContentLoaded', function() {
 - Genres of interest: ${preferences.genres || 'Not specified'}
 - Current mood: ${preferences.mood || 'Not specified'}
 - Preferred length: ${preferences.length || 'Not specified'}
-- Reading experience level: ${preferences.readingLevel || 'Intermediate'}
-- Themes they're drawn to: ${preferences.themes.join(', ') || 'Not specified'}
-- Writing style preference: ${preferences.writingStyle || 'Not specified'}
-- Book age preference: ${preferences.bookAge || 'Not specified'}
-- Emotional impact desired: ${preferences.emotionalImpact || 'Not specified'}
-- Include obscure titles: ${preferences.includeObscureTitles ? 'Yes' : 'No'}
-- How similar to favorites (1-5): ${preferences.similarityLevel || '3'}
+- Themes they're drawn to: ${preferences.themes.join(', ') || 'Not specifically mentioned'}
 
 Additional context: ${preferences.additionalInfo || 'Not provided'}
 
@@ -626,15 +576,6 @@ Ensure the recommendations are diverse yet relevant, and provide books that will
                 <span class="insight-text">${insight}</span>
             </div>` : ''}
             
-            <div class="feedback-buttons">
-                <button class="feedback-btn relevant" data-book="${book.title}" data-feedback="relevant">
-                    <span class="feedback-icon">✨</span> This resonates with me
-                </button>
-                <button class="feedback-btn irrelevant" data-book="${book.title}" data-feedback="irrelevant">
-                    <span class="feedback-icon">✖</span> Not for my journey
-                </button>
-            </div>
-            
             <div class="modal-actions">
                 <button class="library-toggle-modal-btn ${isInLibrary ? 'in-library' : ''}">
                     ${isInLibrary ? '✓ In Your Library' : '✦ Add to Library ✦'}
@@ -664,30 +605,8 @@ Ensure the recommendations are diverse yet relevant, and provide books that will
             });
         }
         
-        // Add event listeners to feedback buttons
-        const feedbackButtons = bookModal.querySelectorAll('.feedback-btn');
-        feedbackButtons.forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                storeFeedback(book.title, btn.dataset.feedback);
-                
-                // Highlight the selected button
-                feedbackButtons.forEach(b => b.classList.remove('selected'));
-                btn.classList.add('selected');
-                
-                // Show feedback confirmation
-                const confirmationMsg = document.createElement('div');
-                confirmationMsg.className = 'feedback-confirmation';
-                confirmationMsg.textContent = btn.dataset.feedback === 'relevant' 
-                    ? 'Thank you! The Oracle will remember your preference.' 
-                    : 'Noted. The Oracle will avoid similar recommendations.';
-                
-                // Replace buttons with confirmation
-                const feedbackContainer = bookModal.querySelector('.feedback-buttons');
-                feedbackContainer.innerHTML = '';
-                feedbackContainer.appendChild(confirmationMsg);
-            });
-        });
+        // Store feedback silently when the modal is opened
+        storeFeedback(book.title, 'viewed');
         
         // Show the modal
         modalOverlay.classList.add('active');
@@ -767,7 +686,7 @@ Ensure the recommendations are diverse yet relevant, and provide books that will
     const savedTheme = localStorage.getItem('theme') || 
                       (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     
-   // Apply the theme
+    // Apply the theme
     document.documentElement.setAttribute('data-theme', savedTheme);
     
     // Toggle dark mode
@@ -784,172 +703,4 @@ Ensure the recommendations are diverse yet relevant, and provide books that will
     
     // Initialize the library manager
     libraryManager.init();
-
-    // Function to add enhanced form fields
-    function enhanceRecommendationForm() {
-        const form = document.getElementById('recommendation-form');
-        if (!form) return;
-        
-        // Find the submit button to insert before it
-        const submitButton = form.querySelector('button[type="submit"]');
-        if (!submitButton) return;
-        
-        // Create a container for advanced options
-        const advancedOptionsToggle = document.createElement('div');
-        advancedOptionsToggle.className = 'advanced-options-toggle';
-        advancedOptionsToggle.innerHTML = `
-            <button type="button" id="toggle-advanced" class="toggle-advanced-btn">
-                <span class="toggle-icon">✦</span> Reveal Advanced Mystical Options <span class="toggle-icon">✦</span>
-            </button>
-        `;
-        
-        // Create advanced options container
-        const advancedOptions = document.createElement('div');
-        advancedOptions.id = 'advanced-options';
-        advancedOptions.className = 'advanced-options';
-        advancedOptions.style.display = 'none';
-        
-        // Add advanced form fields
-        advancedOptions.innerHTML = `
-            <div class="advanced-options-header">
-                <h3>Advanced Mystical Guidance</h3>
-                <p>Refine your oracle's revelations with these mystical parameters</p>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="reading-level">Your Reading Experience</label>
-                    <select id="reading-level" name="reading-level">
-                        <option value="Beginner">Novice Seeker - New to literary journeys</option>
-                        <option value="Intermediate" selected>Seasoned Wanderer - Comfortable with most texts</option>
-                        <option value="Advanced">Mystical Adept - Seeking profound literary challenges</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="writing-style">Preferred Writing Style</label>
-                    <select id="writing-style" name="writing-style">
-                        <option value="">Any style that resonates</option>
-                        <option value="Lyrical">Lyrical & Poetic</option>
-                        <option value="Straightforward">Clear & Straightforward</option>
-                        <option value="Philosophical">Philosophical & Contemplative</option>
-                        <option value="Descriptive">Rich & Descriptive</option>
-                        <option value="Conversational">Warm & Conversational</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label>Mystical Themes That Call To You</label>
-                <div class="themes-container">
-                    <div class="theme-option">
-                        <input type="checkbox" id="theme-spiritual" name="themes" value="Spiritual">
-                        <label for="theme-spiritual">Spiritual Journeys</label>
-                    </div>
-                    <div class="theme-option">
-                        <input type="checkbox" id="theme-philosophical" name="themes" value="Philosophical">
-                        <label for="theme-philosophical">Philosophical Quests</label>
-                    </div>
-                    <div class="theme-option">
-                        <input type="checkbox" id="theme-growth" name="themes" value="Personal Growth">
-                        <label for="theme-growth">Personal Transformation</label>
-                    </div>
-                    <div class="theme-option">
-                        <input type="checkbox" id="theme-magical" name="themes" value="Magical">
-                        <label for="theme-magical">Magical Realms</label>
-                    </div>
-                    <div class="theme-option">
-                        <input type="checkbox" id="theme-cosmic" name="themes" value="Cosmic">
-                        <label for="theme-cosmic">Cosmic Mysteries</label>
-                    </div>
-                    <div class="theme-option">
-                        <input type="checkbox" id="theme-historical" name="themes" value="Historical">
-                        <label for="theme-historical">Ancient Wisdom</label>
-                    </div>
-                    <div class="theme-option">
-                        <input type="checkbox" id="theme-nature" name="themes" value="Nature">
-                        <label for="theme-nature">Nature & Elements</label>
-                    </div>
-                    <div class="theme-option">
-                        <input type="checkbox" id="theme-symbolic" name="themes" value="Symbolic">
-                        <label for="theme-symbolic">Symbolism & Archetypes</label>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="book-age">Temporal Energy</label>
-                    <select id="book-age" name="book-age">
-                        <option value="">Any era that resonates</option>
-                        <option value="Classic">Timeless Classics</option>
-                        <option value="Modern">Modern Revelations</option>
-                        <option value="Recent">Recent Manifestations (Last 5 Years)</option>
-                        <option value="Mixed">Balanced Blend of Eras</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="emotional-impact">Desired Emotional Resonance</label>
-                    <select id="emotional-impact" name="emotional-impact">
-                        <option value="">Open to all energies</option>
-                        <option value="Inspiring">Inspiring & Uplifting</option>
-                        <option value="Thought-provoking">Thought-provoking & Challenging</option>
-                        <option value="Comforting">Comforting & Reassuring</option>
-                        <option value="Transformative">Transformative & Life-changing</option>
-                        <option value="Enlightening">Enlightening & Awakening</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-group toggle-group">
-                    <input type="checkbox" id="include-obscure" name="include-obscure">
-                    <label for="include-obscure">Include Hidden Gems & Obscure Wisdom</label>
-                </div>
-                
-                <div class="form-group">
-                    <label for="similarity-level">Similarity to Your Current Path</label>
-                    <div class="similarity-slider-container">
-                        <input type="range" id="similarity-level" name="similarity-level" min="1" max="5" value="3">
-                        <div class="slider-labels">
-                            <span>New Directions</span>
-                            <span>Balanced</span>
-                            <span>Familiar Waters</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // Insert the advanced options before the submit button
-        const formContainer = submitButton.parentElement;
-        formContainer.insertBefore(advancedOptionsToggle, submitButton);
-        formContainer.insertBefore(advancedOptions, submitButton);
-        
-        // Add toggle functionality
-        const toggleButton = document.getElementById('toggle-advanced');
-        toggleButton.addEventListener('click', function() {
-            const advancedSection = document.getElementById('advanced-options');
-            if (advancedSection.style.display === 'none') {
-                advancedSection.style.display = 'block';
-                toggleButton.innerHTML = `
-                    <span class="toggle-icon">✦</span> Conceal Advanced Mystical Options <span class="toggle-icon">✦</span>
-                `;
-                
-                // Smooth scroll to show the advanced options
-                setTimeout(() => {
-                    advancedSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 100);
-            } else {
-                advancedSection.style.display = 'none';
-                toggleButton.innerHTML = `
-                    <span class="toggle-icon">✦</span> Reveal Advanced Mystical Options <span class="toggle-icon">✦</span>
-                `;
-            }
-        });
-    }
-    
-    // Call the function to enhance the form
-    enhanceRecommendationForm();
 });
