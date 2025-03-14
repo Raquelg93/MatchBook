@@ -23,7 +23,7 @@ exports.handler = async function(event, context) {
     
     // Create prompt for OpenAI
 const prompt = `
-  Based on the following preferences, recommend 5 HIGHLY SIMILAR books to the ones listed by the user. For each book they mentioned, find books that closely match its style, themes, plot elements, and writing tone:
+  Based on the following preferences, recommend 10 HIGHLY SIMILAR books to the ones listed by the user. For each book they mentioned, find books that closely match its style, themes, plot elements, and writing tone:
   
   Favorite books: ${favoriteBooks}
   ${favoriteAuthors ? `Favorite authors: ${favoriteAuthors}` : ''}
