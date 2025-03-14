@@ -23,7 +23,7 @@ exports.handler = async function(event, context) {
     
     // Create prompt for OpenAI
     const prompt = `
-      Based on the following preferences, recommend 5 books:
+      Based on the following preferences, recommend 5 books in the same genre:
       
       Favorite books: ${favoriteBooks}
       ${favoriteAuthors ? `Favorite authors: ${favoriteAuthors}` : ''}
