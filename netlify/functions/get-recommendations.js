@@ -51,7 +51,6 @@ const prompt = `
   Favorite books: ${favoriteBooks}
   ${favoriteAuthors ? `Favorite authors: ${favoriteAuthors}` : ''}
   ${genres ? `Preferred genres: ${genres}` : ''}
-  ${mood ? `Preferred mood: ${mood}` : ''}
   ${length ? `Length preference: ${length}` : ''}
   ${additionalInfo ? `Additional information: ${additionalInfo}` : ''}
   
