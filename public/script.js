@@ -330,19 +330,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Create enhanced recommendation request
         createEnhancedRequest: function() {
-           // Get form values
-const favoriteBooks = document.getElementById('favorite-books').value;
-const favoriteAuthors = document.getElementById('favorite-authors').value;
-const genres = document.getElementById('genres').value;
-const additionalInfo = document.getElementById('additional-info').value;
-
-// Create request object
-const requestData = {
-    favoriteBooks,
-    favoriteAuthors,
-    genres,
-    additionalInfo
-};
+            // Get form values
+            const favoriteBooks = document.getElementById('favorite-books').value;
+            const favoriteAuthors = document.getElementById('favorite-authors').value;
+            const genres = document.getElementById('genres').value;
+            const additionalInfo = document.getElementById('additional-info').value;
             
             // Get all user feedback
             const userFeedback = JSON.parse(localStorage.getItem('bookFeedback') || '{}');
@@ -351,24 +343,14 @@ const requestData = {
             const combinedText = `${favoriteBooks} ${favoriteAuthors} ${additionalInfo}`;
             const analyzedThemes = this.analyzeText(combinedText);
             
-            // Create enhanced request object
+            // Create enhanced request object - removed mood and length
             return {
                 favoriteBooks,
                 favoriteAuthors,
                 genres,
-                length,
                 additionalInfo,
                 themes: analyzedThemes,
-                userFeedback,
-                // Enhanced prompt for better results
-                enhancedPrompt: this.generateEnhancedPrompt({
-                    favoriteBooks,
-                    favoriteAuthors,
-                    genres,
-                    length,
-                    themes: analyzedThemes,
-                    additionalInfo
-                })
+                userFeedback
             };
         },
         
@@ -378,8 +360,6 @@ const requestData = {
 - Favorite books: ${preferences.favoriteBooks || 'Not specified'}
 - Favorite authors: ${preferences.favoriteAuthors || 'Not specified'}
 - Genres of interest: ${preferences.genres || 'Not specified'}
-- Current mood: ${preferences.mood || 'Not specified'}
-- Preferred length: ${preferences.length || 'Not specified'}
 - Themes they're drawn to: ${preferences.themes.join(', ') || 'Not specifically mentioned'}
 
 Additional context: ${preferences.additionalInfo || 'Not provided'}
