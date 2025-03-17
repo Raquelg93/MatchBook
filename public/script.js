@@ -688,3 +688,270 @@ Ensure the recommendations are diverse yet relevant, and provide books that will
     // Initialize the library manager
     libraryManager.init();
 });
+
+// Add this to your main JavaScript file
+
+// Trending Books functionality
+const trendingBooks = {
+    books: [],
+    scrollPosition: 0,
+    booksPerView: 0,
+    
+    // Initialize trending books section
+    init: function() {
+        this.fetchTrendingBooks();
+        this.setupScrollButtons();
+        this.calculateBooksPerView();
+        
+        // Recalculate on window resize
+        window.addEventListener('resize', () => {
+            this.calculateBooksPerView();
+            this.updateScrollButtons();
+        });
+    },
+    
+    // Calculate how many books can be viewed at once based on screen width
+    calculateBooksPerView: function() {
+        const container = document.querySelector('.trending-books-container');
+        if (!container) return;
+        
+        const containerWidth = container.offsetWidth;
+        const bookWidth = 200 + 24; // book width + gap
+        
+        this.booksPerView = Math.floor(containerWidth / bookWidth);
+        if (this.booksPerView < 1) this.booksPerView = 1;
+    },
+    
+    // Fetch trending books
+    fetchTrendingBooks: async function() {
+        try {
+            // Check if we have cached trending books and if they're still valid
+            const cachedData = localStorage.getItem('trendingBooksCache');
+            const now = new Date();
+            
+            if (cachedData) {
+                const { books, timestamp, month } = JSON.parse(cachedData);
+                const cachedDate = new Date(timestamp);
+                const currentMonth = now.getMonth();
+                
+                // Use cached data if it's from the current month
+                if (month === currentMonth && books.length > 0) {
+                    this.books = books;
+                    this.renderTrendingBooks();
+                    return;
+                }
+            }
+            
+            // If no valid cache, fetch trending books
+            const trendingApiUrl = '/api/get-trending-books';
+            
+            try {
+                // Try to fetch from our API
+                const response = await fetch(trendingApiUrl);
+                const data = await response.json();
+                this.books = data.books;
+            } catch (error) {
+                // If API fails, use fallback method (e.g., Google Books API for trending/popular books)
+                await this.fetchFallbackTrendingBooks();
+            }
+            
+            // Save to cache with current month
+            localStorage.setItem('trendingBooksCache', JSON.stringify({
+                books: this.books,
+                timestamp: now.toISOString(),
+                month: now.getMonth()
+            }));
+            
+            this.renderTrendingBooks();
+            
+        } catch (error) {
+            console.error('Error fetching trending books:', error);
+            this.showError();
+        }
+    },
+    
+    // Fallback method to get trending books if our API fails
+    fetchFallbackTrendingBooks: async function() {
+        try {
+            // Use Google Books API to get popular books
+            const response = await fetch('https://www.googleapis.com/books/v1/volumes?q=subject:fiction&orderBy=newest&maxResults=10');
+            const data = await response.json();
+            
+            if (data.items && data.items.length > 0) {
+                this.books = data.items.map((item, index) => {
+                    const volumeInfo = item.volumeInfo;
+                    return {
+                        title: volumeInfo.title,
+                        author: volumeInfo.authors ? volumeInfo.authors[0] : 'Unknown Author',
+                        imageUrl: volumeInfo.imageLinks ? volumeInfo.imageLinks.thumbnail : null,
+                        rank: index + 1
+                    };
+                });
+            } else {
+                // If Google Books API also fails, use hardcoded trending books
+                this.useHardcodedTrendingBooks();
+            }
+        } catch (error) {
+            console.error('Fallback fetch failed:', error);
+            this.useHardcodedTrendingBooks();
+        }
+    },
+    
+    // Use hardcoded trending books as a last resort
+    useHardcodedTrendingBooks: function() {
+        this.books = [
+            { title: "The Midnight Library", author: "Matt Haig", rank: 1 },
+            { title: "Circe", author: "Madeline Miller", rank: 2 },
+            { title: "The Night Circus", author: "Erin Morgenstern", rank: 3 },
+            { title: "The Starless Sea", author: "Erin Morgenstern", rank: 4 },
+            { title: "The House in the Cerulean Sea", author: "TJ Klune", rank: 5 },
+            { title: "The Invisible Life of Addie LaRue", author: "V.E. Schwab", rank: 6 },
+            { title: "The Ten Thousand Doors of January", author: "Alix E. Harrow", rank: 7 },
+            { title: "The Once and Future Witches", author: "Alix E. Harrow", rank: 8 }
+        ];
+    },
+    
+    // Render trending books to DOM
+    renderTrendingBooks: function() {
+        const container = document.getElementById('trending-books');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        this.books.forEach((book, index) => {
+            const bookElement = document.createElement('div');
+            bookElement.className = 'trending-book';
+            
+            // Get image URL or use placeholder
+            const imageUrl = book.imageUrl || `/api/placeholder/200/280?text=${encodeURIComponent(book.title)}`;
+            
+            bookElement.innerHTML = `
+                <div class="trending-rank">${book.rank || index + 1}</div>
+                <img src="${imageUrl}" alt="${book.title}">
+                <div class="trending-book-info">
+                    <h3 class="trending-book-title">${book.title}</h3>
+                    <p class="trending-book-author">by ${book.author}</p>
+                </div>
+            `;
+            
+            // Add click event to view book details
+            bookElement.addEventListener('click', () => {
+                this.showBookDetails(book);
+            });
+            
+            container.appendChild(bookElement);
+        });
+        
+        this.updateScrollButtons();
+    },
+    
+    // Show error message if fetching fails
+    showError: function() {
+        const container = document.getElementById('trending-books');
+        if (!container) return;
+        
+        container.innerHTML = `
+            <div class="trending-error">
+                <p>The mystical forces are obstructed at the moment.</p>
+                <p>Please return later to see the trending revelations.</p>
+            </div>
+        `;
+    },
+    
+    // Setup scroll navigation buttons
+    setupScrollButtons: function() {
+        const prevBtn = document.querySelector('.prev-btn');
+        const nextBtn = document.querySelector('.next-btn');
+        
+        if (!prevBtn || !nextBtn) return;
+        
+        prevBtn.addEventListener('click', () => {
+            this.scroll(-1);
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            this.scroll(1);
+        });
+    },
+    
+    // Scroll the trending books
+    scroll: function(direction) {
+        const container = document.getElementById('trending-books');
+        if (!container) return;
+        
+        // Calculate the number of books to scroll by
+        const scrollBy = direction * this.booksPerView;
+        
+        // Update scroll position
+        this.scrollPosition += scrollBy;
+        
+        // Ensure scroll position is within bounds
+        if (this.scrollPosition < 0) this.scrollPosition = 0;
+        if (this.scrollPosition > this.books.length - this.booksPerView) {
+            this.scrollPosition = Math.max(0, this.books.length - this.booksPerView);
+        }
+        
+        // Calculate scroll amount in pixels
+        const bookWidth = 200 + 24; // book width + gap
+        const scrollAmount = this.scrollPosition * bookWidth;
+        
+        // Apply scroll
+        container.style.transform = `translateX(-${scrollAmount}px)`;
+        
+        // Update button states
+        this.updateScrollButtons();
+    },
+    
+    // Update scroll button states
+    updateScrollButtons: function() {
+        const prevBtn = document.querySelector('.prev-btn');
+        const nextBtn = document.querySelector('.next-btn');
+        
+        if (!prevBtn || !nextBtn) return;
+        
+        // Disable prev button if at the beginning
+        prevBtn.disabled = this.scrollPosition <= 0;
+        
+        // Disable next button if at the end
+        nextBtn.disabled = this.scrollPosition >= this.books.length - this.booksPerView;
+    },
+    
+    // Show book details in the main modal
+    showBookDetails: function(book) {
+        // Generate a random index for display purposes
+        const randomIndex = Math.floor(Math.random() * 5);
+        
+        // Get a random tarot symbol
+        const tarotSymbols = ['☽', '☼', '★', '♆', '⚶', '☿', '♀', '♃', '♄', '⚸'];
+        const symbol = tarotSymbols[randomIndex % tarotSymbols.length];
+        
+        // Generate description if not available
+        const description = book.description || `"${book.title}" by ${book.author} is currently captivating readers across the mystical realm. This trending revelation offers profound insights and a journey that many seekers are currently exploring. The stars have aligned to bring this book into prominence during this lunar cycle.`;
+        
+        // Get image URL or use placeholder
+        const imageUrl = book.imageUrl || `/api/placeholder/300/450?text=${encodeURIComponent(book.title)}`;
+        
+        // Use the existing openBookModal function to display the book
+        if (typeof openBookModal === 'function') {
+            openBookModal(
+                {
+                    title: book.title,
+                    author: book.author,
+                    description: description,
+                    celestialAlignment: generateCelestialAlignment()
+                },
+                randomIndex,
+                symbol,
+                imageUrl
+            );
+        }
+    }
+};
+
+// Initialize trending books after DOM content is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Other initialization code...
+    
+    // Initialize trending books
+    trendingBooks.init();
+});
